@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Quiz - QuizGrad</title>
+    <link rel="stylesheet" href="../assets/css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/components/dashboard/createQuiz/createQuiz.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1><i class="bi bi-pencil-square"></i> Create a New Quiz</h1>
+        <form id="quiz-form" action="create_quiz.php" method="POST">
+            <div class="form-group">
+                <label for="quiz-title"><i class="bi bi-card-heading"></i> Quiz Title:</label>
+                <input type="text" id="quiz-title" name="quiz-title" required>
+            </div>
+            <div class="form-group">
+                <label for="quiz-description"><i class="bi bi-card-text"></i> Quiz Description:</label>
+                <textarea id="quiz-description" name="quiz-description" rows="3" required></textarea>
+            </div>
+            <div id="questions-container">
+                <!-- Questions will be added here dynamically -->
+            </div>
+            <div class="button-row">
+                <button type="button" class="add-question" onclick="addQuestion()"><i class="bi bi-plus-circle"></i> Add Question</button>
+                <button type="submit" class="submit-quiz"><i class="bi bi-check-circle"></i> Create Quiz</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let questionCount = 0;
+
+        // Prevent form resubmission on page refresh
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+
+        function addQuestion() {
+            questionCount++;
+            const questionHtml = `
+                <div class="form-group question" id="question-${questionCount}-container">
+                    <div class="question-header">
+                        <label for="question-${questionCount}"><i class="bi bi-question-circle"></i> Question ${questionCount}</label>
+                        <div class="question-tools">
+                            <select id="question-type-${questionCount}" name="question-type[]" onchange="updateQuestionType(${questionCount})" required>
+                                <option value="multiple">Multiple choice</option>
+                                <option value="single">Single choice</option>
+                                <option value="text">Short answer</option>
+                                <option value="integer">Number</option>
+                            </select>
+                            <button type="button" class="tool-button" onclick="deleteQuestion(${questionCount})"><i class="bi bi-trash"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" id="question-${questionCount}" name="question[]" placeholder="Enter your question" required>
+                    <div id="options-${questionCount}" class="options">
+                        <!-- Options will be added here dynamically -->
+                    </div>
+                    <button type="button" class="add-option" onclick="addOption(${questionCount})">Add option</button>
+                </div>
+            `;
+            document.getElementById('questions-container').insertAdjacentHTML('beforeend', questionHtml);
+            updateQuestionType(questionCount);
+        }
+
+        function updateQuestionType(questionNumber) {
+            const questionType = document.getElementById(`question-type-${questionNumber}`).value;
+            const optionsContainer = document.getElementById(`options-${questionNumber}`);
+            const addOptionButton = document.querySelector(`#question-${questionNumber}-container .add-option`);
+            optionsContainer.innerHTML = '';
+
+            switch (questionType) {
+                case 'single':
+                case 'multiple':
+                    for (let i = 1; i <= 2; i++) {
+                        addOption(questionNumber);
+                    }
+                    addOptionButton.style.display = 'block';
+                    break;
+                case 'text':
+                case 'integer':
+                    optionsContainer.innerHTML = '<input type="text" name="option[' + questionNumber + '][]" placeholder="Correct answer" required>';
+                    addOptionButton.style.display = 'none';
+                    break;
+            }
+        }
+
+        function addOption(questionNumber) {
+            const optionsContainer = document.getElementById(`options-${questionNumber}`);
+            const optionCount = optionsContainer.children.length + 1;
+            const questionType = document.getElementById(`question-type-${questionNumber}`).value;
+            const inputType = questionType === 'single' ? 'radio' : 'checkbox';
+
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option';
+
+            const inputElement = document.createElement('input');
+            inputElement.type = inputType;
+            inputElement.id = `correct-${questionNumber}-${optionCount}`;
+            inputElement.name = `correct[${questionNumber}][]`;
+            inputElement.value = optionCount - 1;
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.id = `option-${questionNumber}-${optionCount}`;
+            textInput.name = `option[${questionNumber}][]`;
+            textInput.placeholder = `Option ${optionCount}`;
+            textInput.required = true;
+
+            optionDiv.appendChild(inputElement);
+            optionDiv.appendChild(textInput);
+            optionsContainer.appendChild(optionDiv);
+        }
+
+        function deleteQuestion(questionNumber) {
+            const questionElement = document.getElementById(`question-${questionNumber}-container`);
+            if (questionElement) {
+                questionElement.remove();
+                updateQuestionNumbers();
+            }
+        }
+
+        function updateQuestionNumbers() {
+            const questions = document.querySelectorAll('.question');
+            questions.forEach((question, index) => {
+                const newNumber = index + 1;
+                question.id = `question-${newNumber}-container`;
+                question.querySelector('label').innerHTML = `<i class="bi bi-question-circle"></i> Question ${newNumber}`;
+                question.querySelector('label').setAttribute('for', `question-${newNumber}`);
+                question.querySelector('input[type="text"]').id = `question-${newNumber}`;
+                question.querySelector('input[type="text"]').name = `question[]`;
+
+                const questionType = question.querySelector('select');
+                questionType.id = `question-type-${newNumber}`;
+                questionType.name = `question-type[]`;
+                questionType.setAttribute('onchange', `updateQuestionType(${newNumber})`);
+
+                const optionsContainer = question.querySelector('.options');
+                optionsContainer.id = `options-${newNumber}`;
+
+                const options = optionsContainer.querySelectorAll('.option');
+                options.forEach((option, optionIndex) => {
+                    const optionNumber = optionIndex + 1;
+                    const inputType = option.querySelector('input[type="radio"], input[type="checkbox"]');
+                    if (inputType) {
+                        inputType.id = `correct-${newNumber}-${optionNumber}`;
+                        inputType.name = `correct[${newNumber}][]`;
+                        inputType.value = optionIndex;
+                    }
+                    const optionInput = option.querySelector('input[type="text"]');
+                    if (optionInput) {
+                        optionInput.id = `option-${newNumber}-${optionNumber}`;
+                        optionInput.name = `option[${newNumber}][]`;
+                    }
+                });
+
+                question.querySelector('.add-option').setAttribute('onclick', `addOption(${newNumber})`);
+                question.querySelector('.tool-button').setAttribute('onclick', `deleteQuestion(${newNumber})`);
+            });
+            questionCount = questions.length;
+        }
+
+        // Add the first question by default`
+        addQuestion();
+    </script>
+    <script src="/js/apis/dashboard/createQuiz/createQuiz.js"></script>
+</body>
+
+</html>

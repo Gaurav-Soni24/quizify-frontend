@@ -1,0 +1,320 @@
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --background-color: #f8f9fa;
+    --text-color: #333;
+    --card-bg-color: #ffffff;
+    --hover-color: #e8f4fd;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --button-color: #e74c3c;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    margin: 0;
+    padding: 20px;
+    color: var(--text-color);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--card-bg-color);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 15px 30px var(--shadow-color);
+}
+
+h1 {
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 2.5em;
+    margin-bottom: 30px;
+    text-shadow: 2px 2px 4px var(--shadow-color);
+}
+
+.form-group {
+    margin-bottom: 25px;
+    background-color: var(--background-color);
+    padding: 25px;
+    border-radius: 12px;
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.form-group:hover {
+    box-shadow: 0 5px 15px var(--shadow-color);
+    background-color: var(--hover-color);
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+input[type="text"],
+textarea,
+select {
+    width: calc(100% - 24px);  /* Subtracting padding */
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    background-color: var(--card-bg-color);
+    box-sizing: border-box;  /* Include padding in width calculation */
+}
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+}
+
+.options {
+    margin-top: 15px;
+}
+
+.option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.option input[type="radio"],
+.option input[type="checkbox"] {
+    margin-right: 12px;
+    transform: scale(1.2);
+}
+
+.option input[type="text"] {
+    flex-grow: 1;
+    width: calc(100% - 36px);  /* Subtracting checkbox width and margin */
+}
+
+.button-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+
+.add-question,
+.submit-quiz {
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.add-question {
+    background-color: var(--primary-color);
+}
+
+.submit-quiz {
+    background-color: var(--secondary-color);
+}
+
+.add-question:hover,
+.submit-quiz:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow-color);
+}
+
+.delete-question {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background-color: #ff4d4d;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.delete-question:hover {
+    background-color: #ff3333;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 77, 77, 0.3);
+}
+
+.bi {
+    margin-right: 8px;
+}
+
+.question-type-select {
+    position: absolute;
+    top: 15px;
+    right: 120px;
+    width: auto;
+    padding: 8px;
+    font-size: 14px;
+}
+
+input[type="number"] {
+    width: calc(100% - 24px);  /* Subtracting padding */
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    -moz-appearance: textfield;
+    background-color: var(--card-bg-color);
+    box-sizing: border-box;  /* Include padding in width calculation */
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+input[type="number"]:focus {
+    border-color: var(--primary-color);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.question-tools {
+    display: flex;
+    gap: 10px;
+}
+
+.tool-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.tool-button:hover {
+    color: var(--secondary-color);
+    transform: scale(1.1);
+}
+
+.add-option {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+}
+
+.add-option:hover {
+    color: var(--secondary-color);
+    text-decoration: underline;
+}
+
+/* Improved UI styles */
+.container {
+    max-width: 900px;
+    padding: 50px;
+}
+
+h1 {
+    font-size: 3em;
+    margin-bottom: 40px;
+}
+
+.form-group {
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+input[type="text"],
+textarea,
+select {
+    padding: 15px;
+    font-size: 18px;
+}
+
+.button-row {
+    margin-top: 40px;
+}
+
+.add-question,
+.submit-quiz {
+    padding: 15px 30px;
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+.question-header {
+    margin-bottom: 20px;
+}
+
+.question-tools {
+    gap: 15px;
+}
+
+.tool-button {
+    font-size: 24px;
+}
+
+.add-option {
+    font-size: 16px;
+    margin-top: 15px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.form-group {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        padding: 30px;
+    }
+
+    h1 {
+        font-size: 2.5em;
+    }
+
+    .form-group {
+        padding: 20px;
+    }
+
+    .add-question,
+    .submit-quiz {
+        padding: 12px 20px;
+        font-size: 16px;
+    }
+}
