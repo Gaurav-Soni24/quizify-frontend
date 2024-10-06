@@ -1,3 +1,9 @@
+
+// Call the function when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    checkAccessToken();
+
+
 document.addEventListener('DOMContentLoaded', function() {
     const hamburger = document.querySelector(".hamburger");
     const navMenu = document.querySelector(".nav-menu");
