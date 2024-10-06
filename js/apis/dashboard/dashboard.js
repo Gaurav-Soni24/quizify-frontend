@@ -29,11 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const data = await response.json();
 
-            console.log(data)
+            console.log(data);
 
             if (response.ok) {
                 displayUserData(data);
-                fetchQuizzes();
+                displayQuizzes(data.quizzes);
             } else {
                 handleError(data.error);
             }
@@ -52,30 +52,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (teacherFullName) teacherFullName.textContent = userData.name;
         if (teacherEmail) teacherEmail.textContent = userData.email;
     }
-
-    async function fetchQuizzes() {
-        try {
-            const response = await fetch('https://quizify-backend-theta.vercel.app/quizzes', {
-                method: 'GET',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-
-            const quizzes = await response.json();
-
-            if (response.ok) {
-                displayQuizzes(quizzes);
-            } else {
-                handleError('Failed to fetch quizzes');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            handleError('An error occurred while fetching quizzes');
-        }
-    }
-
     function displayQuizzes(quizzes) {
         const quizListBody = document.getElementById('quiz-list-body');
         quizListBody.innerHTML = '';
@@ -83,15 +59,62 @@ document.addEventListener('DOMContentLoaded', function() {
         quizzes.forEach(quiz => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${quiz.name}</td>
-                <td>${new Date(quiz.createdAt).toLocaleDateString()}</td>
+                <td>${quiz.title}</td>
+                <td>${new Date().toLocaleDateString()}</td>
                 <td>
-                    <a href="#edit" class="btn" data-id="${quiz.id}">Edit</a>
-                    <a href="#delete" class="btn btn-delete" data-id="${quiz.id}">Delete</a>
+                    <button class="btn btn-toggle" data-id="${quiz.id}" data-status="${quiz.isPublic ? 'public' : 'private'}">
+                        ${quiz.isPublic ? 'Public' : 'Private'}
+                    </button>
+                    <button class="btn btn-share" data-id="${quiz.id}"><i class="bi bi-share"></i></button>
+                    <button class="btn btn-edit" data-id="${quiz.id}"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-submissions" data-id="${quiz.id}"><i class="bi bi-file-earmark-text"></i></button>
+                    <button class="btn btn-delete" data-id="${quiz.id}"><i class="bi bi-trash"></i></button>
                 </td>
             `;
             quizListBody.appendChild(row);
         });
+
+        // Add event listeners for the new buttons
+        quizListBody.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-toggle')) {
+                toggleQuizVisibility(e.target);
+            } else if (e.target.classList.contains('btn-share')) {
+                shareQuiz(e.target.dataset.id);
+            } else if (e.target.classList.contains('btn-edit')) {
+                editQuiz(e.target.dataset.id);
+            } else if (e.target.classList.contains('btn-submissions')) {
+                viewSubmissions(e.target.dataset.id);
+            } else if (e.target.classList.contains('btn-delete')) {
+                deleteQuiz(e.target.dataset.id);
+            }
+        });
+    }
+
+    function toggleQuizVisibility(button) {
+        const newStatus = button.dataset.status === 'public' ? 'private' : 'public';
+        button.dataset.status = newStatus;
+        button.textContent = newStatus.charAt(0).toUpperCase() + newStatus.slice(1);
+        // TODO: Implement API call to update quiz visibility
+    }
+
+    function shareQuiz(quizId) {
+        // TODO: Implement share functionality
+        console.log(`Sharing quiz with ID: ${quizId}`);
+    }
+
+    function editQuiz(quizId) {
+        // TODO: Implement edit functionality
+        console.log(`Editing quiz with ID: ${quizId}`);
+    }
+
+    function viewSubmissions(quizId) {
+        // TODO: Implement view submissions functionality
+        console.log(`Viewing submissions for quiz with ID: ${quizId}`);
+    }
+
+    function deleteQuiz(quizId) {
+        // TODO: Implement delete functionality
+        console.log(`Deleting quiz with ID: ${quizId}`);
     }
 
     function handleError(errorMsg) {

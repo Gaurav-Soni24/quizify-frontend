@@ -23,6 +23,45 @@
                 <label for="quiz-description"><i class="bi bi-card-text"></i> Quiz Description:</label>
                 <textarea id="quiz-description" name="quiz-description" rows="3" required></textarea>
             </div>
+            <div class="form-group">
+                <label><i class="bi bi-person-badge"></i> User Details Required:</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-name" name="require-name" checked>
+                    <label for="require-name">Name</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-email" name="require-email" checked>
+                    <label for="require-email">Email</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-dob" name="require-dob">
+                    <label for="require-dob">Date of Birth</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-gender" name="require-gender">
+                    <label for="require-gender">Gender</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-address" name="require-address">
+                    <label for="require-address">Address</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-nationality" name="require-nationality">
+                    <label for="require-nationality">Nationality</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-institution" name="require-institution">
+                    <label for="require-institution">Institution</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-department" name="require-department">
+                    <label for="require-department">Department or Field of Study</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="require-phone" name="require-phone">
+                    <label for="require-phone">Phone Number</label>
+                </div>
+            </div>
             <div id="questions-container">
                 <!-- Questions will be added here dynamically -->
             </div>
@@ -35,6 +74,7 @@
 
     <script>
         let questionCount = 0;
+        let formChanged = false;
 
         // Prevent form resubmission on page refresh
         if (window.history.replaceState) {
@@ -66,6 +106,7 @@
             `;
             document.getElementById('questions-container').insertAdjacentHTML('beforeend', questionHtml);
             updateQuestionType(questionCount);
+            formChanged = true;
         }
 
         function updateQuestionType(questionNumber) {
@@ -88,6 +129,7 @@
                     addOptionButton.style.display = 'none';
                     break;
             }
+            formChanged = true;
         }
 
         function addOption(questionNumber) {
@@ -115,6 +157,7 @@
             optionDiv.appendChild(inputElement);
             optionDiv.appendChild(textInput);
             optionsContainer.appendChild(optionDiv);
+            formChanged = true;
         }
 
         function deleteQuestion(questionNumber) {
@@ -123,6 +166,7 @@
                 questionElement.remove();
                 updateQuestionNumbers();
             }
+            formChanged = true;
         }
 
         function updateQuestionNumbers() {
@@ -165,8 +209,26 @@
             questionCount = questions.length;
         }
 
-        // Add the first question by default`
+        // Add the first question by default
         addQuestion();
+
+        // Add event listeners to track form changes
+        document.getElementById('quiz-form').addEventListener('input', () => {
+            formChanged = true;
+        });
+
+        // Add event listener for form submission
+        document.getElementById('quiz-form').addEventListener('submit', () => {
+            formChanged = false;
+        });
+
+        // Add event listener for page unload
+        window.addEventListener('beforeunload', (event) => {
+            if (formChanged) {
+                event.preventDefault();
+                event.returnValue = '';
+            }
+        });
     </script>
     <script src="/js/apis/dashboard/createQuiz/createQuiz.js"></script>
 </body>

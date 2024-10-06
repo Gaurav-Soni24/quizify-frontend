@@ -7,6 +7,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const quizData = {
             title: document.getElementById('quiz-title').value,
             description: document.getElementById('quiz-description').value,
+            isPublic: false, // Set the quiz to private by default
+            requiredFields: {
+                name: document.getElementById('require-name').checked,
+                email: document.getElementById('require-email').checked,
+                dob: document.getElementById('require-dob').checked,
+                gender: document.getElementById('require-gender').checked,
+                address: document.getElementById('require-address').checked,
+                nationality: document.getElementById('require-nationality').checked,
+                institution: document.getElementById('require-institution').checked,
+                department: document.getElementById('require-department').checked,
+                phone: document.getElementById('require-phone').checked
+            },
             questions: []
         };
 
@@ -40,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             quizData.questions.push(question);
         });
-
+        
         try {
             const token = localStorage.getItem('token');
             if (!token) {
