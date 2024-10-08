@@ -136,9 +136,16 @@ document.addEventListener("DOMContentLoaded", function () {
       );
     }
   }
-
   function shareQuiz(quizId) {
-    // TODO: Implement share functionality
+    const shareLink = `http://127.0.0.1:5500/pages/attempt/attempt.html?quizId=${quizId}`;
+    navigator.clipboard.writeText(shareLink)
+      .then(() => {
+        alert('Share link copied to clipboard!');
+      })
+      .catch(err => {
+        console.error('Failed to copy link: ', err);
+        alert('Failed to copy link. Please try again.');
+      });
     console.log(`Sharing quiz with ID: ${quizId}`);
   }
 

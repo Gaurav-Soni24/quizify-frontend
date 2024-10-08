@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attempt Quiz</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <h1>Attempt Quiz</h1>
+    <div id="quiz-container"></div>
+    <div id="quiz-details"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const quizId = urlParams.get('quizId');
+
+            if (!quizId) {
+                console.error('Error: No quiz ID provided.');
+                return;
+            }
+
+            async function fetchQuizData(quizId) {
+                try {
+                    const response = await axios.get(`https://quizify-backend-theta.vercel.app/public-quiz/${quizId}`);
+                    const quizData = response.data.quiz;
+                    console.log('Quiz data:', quizData);
+                } catch (error) {
+                    console.error('Error fetching quiz data:', error);
+                }
+            }
+
+            fetchQuizData(quizId);
+        });
+    </script>
+</body>
+</html>
