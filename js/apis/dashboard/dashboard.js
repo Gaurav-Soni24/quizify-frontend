@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const response = await fetch(
-        `http://localhost:3000/user/${userId}`,
+        `https://quizify-backend-theta.vercel.app/user/${userId}`,
         {
           method: "GET",
           headers: {
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentStatus = button.dataset.status;
 
     try {
-      const response = await fetch("http://localhost:3000/toggle-quiz-public", {
+      const response = await fetch("https://quizify-backend-theta.vercel.app/toggle-quiz-public", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
