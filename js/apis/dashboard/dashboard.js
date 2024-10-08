@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     try {
       const response = await fetch(
-        `https://quizify-backend-theta.vercel.app/user/${userId}`,
+        `http://localhost:3000/user/${userId}`,
         {
           method: "GET",
           headers: {
