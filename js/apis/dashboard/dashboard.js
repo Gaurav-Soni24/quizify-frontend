@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const row = document.createElement("tr");
       row.innerHTML = `
                 <td>${quiz.title}</td>
-                <td>${new Date().toLocaleDateString()}</td>
+                <td>${new Date(quiz.createdAt).toLocaleDateString()}</td>
                 <td>
                     <button class="btn btn-toggle" data-id="${
                       quiz.id
