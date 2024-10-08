@@ -151,10 +151,54 @@ document.addEventListener("DOMContentLoaded", function () {
     // TODO: Implement view submissions functionality
     console.log(`Viewing submissions for quiz with ID: ${quizId}`);
   }
+  async function deleteQuiz(quizId) {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
 
-  function deleteQuiz(quizId) {
-    // TODO: Implement delete functionality
-    console.log(`Deleting quiz with ID: ${quizId}`);
+      const response = await fetch(`https://quizify-backend-theta.vercel.app/api/quizzes/${quizId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        if (response.status === 404) {
+          throw new Error("Quiz not found");
+        } else if (response.status === 403) {
+          throw new Error("Unauthorized: You don't have permission to delete this quiz");
+        } else if (response.status === 500) {
+          throw new Error(errorData.error || "Failed to delete quiz");
+        } else {
+          throw new Error(errorData.error || "Failed to delete quiz");
+        }
+      }
+
+      const result = await response.json();
+      console.log(result.message);
+      alert("Quiz deleted successfully!");
+      
+      // Refresh the dashboard to reflect the changes
+      fetchDashboardData();
+    } catch (error) {
+      console.error("Error deleting quiz:", error);
+      if (error.message === "No authentication token found") {
+        window.location.href = "/pages/authentication/signin.html";
+      } else if (error.message === "Quiz not found") {
+        alert("The quiz you're trying to delete doesn't exist.");
+      } else if (error.message.startsWith("Unauthorized")) {
+        alert("You don't have permission to delete this quiz.");
+      } else if (error.message === "Database operation failed") {
+        alert("A database error occurred. Please try again later.");
+      } else {
+        alert(`Error deleting quiz: ${error.message}`);
+      }
+    }
   }
 
   function handleError(errorMsg) {
