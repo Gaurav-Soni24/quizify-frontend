@@ -63,39 +63,32 @@ document.addEventListener("DOMContentLoaded", function () {
     quizzes.forEach((quiz) => {
       const row = document.createElement("tr");
       row.innerHTML = `
-                <td>${quiz.title}</td>
-                <td>${new Date(quiz.createdAt).toLocaleDateString()}</td>
-                <td>
-                    <button class="btn btn-toggle" data-id="${
-                      quiz.id
-                    }" data-status="${quiz.isPublic ? "public" : "private"}">
-                        ${quiz.isPublic ? "Public" : "Private"}
-                    </button>
-                    <button class="btn btn-share" data-id="${
-                      quiz.id
-                    }"><i class="bi bi-share"></i></button>
-                    <button class="btn btn-edit" data-id="${
-                      quiz.id
-                    }"><i class="bi bi-pencil"></i></button>
-                    <button class="btn btn-submissions" data-id="${
-                      quiz.id
-                    }"><i class="bi bi-file-earmark-text"></i></button>
-                    <button class="btn btn-delete" data-id="${
-                      quiz.id
-                    }"><i class="bi bi-trash"></i></button>
-                </td>
-            `;
+            <td data-label="Quiz Name">${quiz.title}</td>
+            <td data-label="Date Created">${new Date(quiz.createdAt).toLocaleDateString()}</td>
+            <td data-label="Actions">
+                <button class="btn btn-toggle" data-id="${quiz.id}" data-status="${quiz.isPublic ? "public" : "private"}">
+                    ${quiz.isPublic ? "Public" : "Private"}
+                </button>
+                <button class="btn btn-share" data-id="${quiz.id}">
+                    <i class="bi bi-share"></i>
+                </button>
+                <button class="btn btn-submissions" data-id="${quiz.id}">
+                    <i class="bi bi-file-earmark-text"></i>
+                </button>
+                <button class="btn btn-delete" data-id="${quiz.id}">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
       quizListBody.appendChild(row);
     });
 
-    // Add event listeners for the new buttons
+    // Update event listeners (removed edit functionality)
     quizListBody.addEventListener("click", function (e) {
       if (e.target.classList.contains("btn-toggle")) {
         toggleQuizVisibility(e.target);
       } else if (e.target.classList.contains("btn-share")) {
         shareQuiz(e.target.dataset.id);
-      } else if (e.target.classList.contains("btn-edit")) {
-        editQuiz(e.target.dataset.id);
       } else if (e.target.classList.contains("btn-submissions")) {
         viewSubmissions(e.target.dataset.id);
       } else if (e.target.classList.contains("btn-delete")) {
@@ -147,11 +140,6 @@ document.addEventListener("DOMContentLoaded", function () {
         alert('Failed to copy link. Please try again.');
       });
     console.log(`Sharing quiz with ID: ${quizId}`);
-  }
-
-  function editQuiz(quizId) {
-    // TODO: Implement edit functionality
-    console.log(`Editing quiz with ID: ${quizId}`);
   }
 
   function viewSubmissions(quizId) {

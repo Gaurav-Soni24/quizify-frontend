@@ -23,15 +23,54 @@
                 <label for="quiz-description"><i class="bi bi-card-text"></i> Quiz Description:</label>
                 <textarea id="quiz-description" name="quiz-description" rows="3" required></textarea>
             </div>
+            <div class="form-group quiz-settings">
+                <div class="settings-grid">
+                    <div class="setting-item">
+                        <div class="time-limit-container">
+                            <div class="time-limit-toggle">
+                                <input type="checkbox" id="enable-time-limit" name="enable-time-limit">
+                                <label for="enable-time-limit">Enable Time Limit</label>
+                            </div>
+                            <input type="number" id="time-limit" name="timeLimit" min="1" max="180" placeholder="Enter time in minutes">
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label for="difficulty"><i class="bi bi-bar-chart"></i> Difficulty Level:</label>
+                        <select id="difficulty" name="difficulty">
+                            <option value="easy">Easy</option>
+                            <option value="medium">Medium</option>
+                            <option value="hard">Hard</option>
+                        </select>
+                    </div>
+                    <div class="setting-item">
+                        <label for="passing-score"><i class="bi bi-award"></i> Passing Score (%):</label>
+                        <input type="number" id="passing-score" name="passingScore" min="0" max="100" value="60">
+                    </div>
+                    <div class="setting-item">
+                        <label for="show-answers"><i class="bi bi-eye"></i> Show Answers:</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="show-answers" name="show-answers">
+                            <label for="show-answers" class="toggle-label">Show answers after submission</label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Quiz Settings:</label>
+                        <div class="toggle-container">
+                            <input type="checkbox" id="shuffle-questions" name="shuffle-questions">
+                            <label for="shuffle-questions">Shuffle Questions</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="form-group">
                 <label><i class="bi bi-person-badge"></i> User Details Required:</label>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="require-name" name="require-name" checked>
-                    <label for="require-name">Name</label>
+                    <input type="checkbox" id="require-email" name="require-email" checked disabled>
+                    <label for="require-email">Email (Always Required)</label>
                 </div>
                 <div class="checkbox-group">
-                    <input type="checkbox" id="require-email" name="require-email" checked>
-                    <label for="require-email">Email</label>
+                    <input type="checkbox" id="require-name" name="require-name" checked>
+                    <label for="require-name">Name</label>
                 </div>
                 <div class="checkbox-group">
                     <input type="checkbox" id="require-dob" name="require-dob">
@@ -62,14 +101,22 @@
                     <label for="require-phone">Phone Number</label>
                 </div>
             </div>
+            <div class="form-group">
+                <label for="quiz-instructions"><i class="bi bi-info-circle"></i> Teacher Instructions (Optional):</label>
+                <textarea id="quiz-instructions" name="quiz-instructions" rows="3" placeholder="Enter instructions for students taking this quiz"></textarea>
+            </div>
             <div id="questions-container">
                 <!-- Questions will be added here dynamically -->
             </div>
             <div class="button-row">
-                <button type="button" class="add-question" onclick="addQuestion()"><i class="bi bi-plus-circle"></i> Add Question</button>
                 <button type="submit" class="submit-quiz"><i class="bi bi-check-circle"></i> Create Quiz</button>
             </div>
         </form>
+        <div class="fab-container">
+            <button type="button" class="fab" onclick="addQuestion()" title="Add Question">
+                <i class="bi bi-plus-lg"></i>
+            </button>
+        </div>
     </div>
 
     <script>
@@ -88,6 +135,10 @@
                     <div class="question-header">
                         <label for="question-${questionCount}"><i class="bi bi-question-circle"></i> Question ${questionCount}</label>
                         <div class="question-tools">
+                            <div class="marks-input">
+                                <label for="marks-${questionCount}">Marks:</label>
+                                <input type="number" id="marks-${questionCount}" name="marks[]" min="0" step="0.5" required>
+                            </div>
                             <select id="question-type-${questionCount}" name="question-type[]" onchange="updateQuestionType(${questionCount})" required>
                                 <option value="multiple">Multiple choice</option>
                                 <option value="single">Single choice</option>

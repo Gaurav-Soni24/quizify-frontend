@@ -308,4 +308,56 @@ footer {
     .hamburger.active .bar:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
     }
+
+    /* Add these styles for responsive table */
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    tr {
+        margin-bottom: 15px;
+        padding: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        border-radius: 8px;
+    }
+
+    td {
+        position: relative;
+        padding: 10px 10px 10px 50%;
+        text-align: right;
+        border: none;
+    }
+
+    td:before {
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        text-align: left;
+        font-weight: bold;
+        content: attr(data-label);
+    }
+
+    /* Adjust button layout for mobile */
+    td .btn {
+        padding: 6px 12px;
+        margin: 5px;
+        font-size: 0.8em;
+        display: inline-block;
+    }
+
+    /* Stack buttons vertically on very small screens */
+    @media screen and (max-width: 400px) {
+        td .btn {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+        }
+    }
 }
