@@ -3,6 +3,10 @@ const id = urlParams.get("id");
 
 let quizData = null; // Global variable to store quiz data
 
+let tabSwitchCount = 0;
+const MAX_TAB_SWITCHES = 2; // Maximum allowed tab switches
+let warningModal = null;
+
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -694,6 +698,19 @@ async function submitQuiz(isAutoSubmit = false) {
   }
 }
 
+// Prevent page reload and ask for confirmation before reload
+window.onbeforeunload = function(event) {
+  event.preventDefault();
+  event.returnValue = "Are you sure you want to leave?";
+}
+
+
+
+
+
+
+
+
 // Update generateResultJSON to handle shuffled questions
 function generateResultJSON(results) {
   // Get user details from the form
@@ -1151,3 +1168,180 @@ document.addEventListener("change", function (e) {
     updateQuestionStatus(index);
   }
 });
+
+// Create warning modal
+function createWarningModal() {
+    const modal = document.createElement('div');
+    modal.className = 'warning-modal';
+    modal.innerHTML = `
+        <div class="warning-content">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <h3>Warning!</h3>
+            <p>Switching tabs during the quiz is not allowed.</p>
+            <p>Remaining switches: <span id="switches-left">${MAX_TAB_SWITCHES - tabSwitchCount}</span></p>
+            <button onclick="closeWarningModal()" class="btn btn-danger">I Understand</button>
+        </div>
+    `;
+    return modal;
+}
+
+// Add these styles to your CSS
+const styles = `
+    .warning-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .warning-content {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        text-align: center;
+        max-width: 400px;
+        animation: slideIn 0.3s ease-out;
+    }
+
+    .warning-content i {
+        color: #dc3545;
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+
+    .warning-content h3 {
+        color: #dc3545;
+        margin-bottom: 15px;
+    }
+
+    .warning-content p {
+        margin-bottom: 15px;
+        color: #333;
+    }
+
+    @keyframes slideIn {
+        from {
+            transform: translateY(-100px);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+`;
+
+// Add the styles to the document
+const styleSheet = document.createElement('style');
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
+
+// Update the visibility change handler
+function handleTabSwitch() {
+    if (document.hidden && quizTimer) {
+        tabSwitchCount++;
+        
+        // Create and show warning modal if it doesn't exist
+        if (!warningModal) {
+            warningModal = createWarningModal();
+            document.body.appendChild(warningModal);
+        } else {
+            warningModal.style.display = 'flex';
+        }
+
+        // Update switches left count
+        const switchesLeft = document.getElementById('switches-left');
+        if (switchesLeft) {
+            switchesLeft.textContent = MAX_TAB_SWITCHES - tabSwitchCount;
+        }
+
+        // Auto-submit if max switches reached
+        if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+            warningModal.querySelector('.warning-content').innerHTML = `
+                <i class="bi bi-x-circle-fill"></i>
+                <h3>Quiz Terminated</h3>
+                <p>Maximum tab switches exceeded.</p>
+                <p>Your quiz will be automatically submitted.</p>
+            `;
+            
+            // Auto submit after 3 seconds
+            setTimeout(() => {
+                submitQuiz();
+            }, 3000);
+        }
+
+        // Log the incident
+        logTabSwitch();
+    }
+}
+
+// Function to close the warning modal
+function closeWarningModal() {
+    if (warningModal) {
+        warningModal.style.display = 'none';
+    }
+}
+
+// Function to log tab switch incidents
+async function logTabSwitch() {
+    try {
+        const data = {
+            quizId: id,
+            timestamp: new Date().toISOString(),
+            switchCount: tabSwitchCount
+        };
+
+        // You can implement the actual logging logic here
+        console.log('Tab switch logged:', data);
+        
+        // Optional: Send to server
+        // await axios.post('your-api-endpoint/log-tab-switch', data);
+    } catch (error) {
+        console.error('Error logging tab switch:', error);
+    }
+}
+
+// Update the existing visibility change listener
+document.addEventListener('visibilitychange', handleTabSwitch);
+
+// Add this to your quiz submission logic
+function submitQuiz() {
+    // Add tab switch information to submission data
+    const submissionData = {
+        // ... existing submission data ...
+        tabSwitches: tabSwitchCount,
+        wasAutoSubmitted: tabSwitchCount >= MAX_TAB_SWITCHES
+    };
+
+    // Implement your existing submission logic here
+    console.log('Submitting quiz with data:', submissionData);
+}
+
+// Optional: Add a warning before the quiz starts
+function showPreQuizWarning() {
+    const warningText = `
+        <div class="alert alert-warning" role="alert">
+            <h4 class="alert-heading"><i class="bi bi-exclamation-triangle-fill"></i> Important Notice!</h4>
+            <p>During this quiz:</p>
+            <ul>
+                <li>You are allowed maximum ${MAX_TAB_SWITCHES} tab switches</li>
+                <li>Switching tabs or windows will trigger a warning</li>
+                <li>Exceeding the limit will auto-submit your quiz</li>
+            </ul>
+        </div>
+    `;
+
+    const instructionsSection = document.querySelector('#section-2 .instructions');
+    if (instructionsSection) {
+        instructionsSection.insertAdjacentHTML('afterbegin', warningText);
+    }
+}
+
+// Call this when the quiz loads
+document.addEventListener('DOMContentLoaded', showPreQuizWarning);
