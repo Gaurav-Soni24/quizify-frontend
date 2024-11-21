@@ -670,7 +670,7 @@ async function submitQuiz(isAutoSubmit = false) {
 
       // ** New Code: Submit the results to the backend API **
       try {
-        const response = await axios.post("http://localhost:3000/submission", {
+        const response = await axios.post("https://quizify-backend-theta.vercel.app/submission", {
           quizId: quizData.quizId,
           userDetails: resultJSON.userDetails,
           submittedAt: resultJSON.submittedAt,
