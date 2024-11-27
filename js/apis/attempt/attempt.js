@@ -223,15 +223,20 @@ function createQuestionElement(question, index, originalIndex) {
   questionDiv.dataset.index = index;
   questionDiv.dataset.originalIndex = originalIndex;
 
-  // Create question header
+  // Create question header with type indicator
   const questionHeader = document.createElement("div");
   questionHeader.className = "question-header";
+  
+  // Get formatted question type
+  const questionType = formatQuestionType(question.type);
+  
   questionHeader.innerHTML = `
-          <span class="question-number">Question ${
-            parseInt(originalIndex) + 1
-          }</span>
-          <span class="question-marks">(${question.marks} marks)</span>
-        `;
+    <div class="question-info">
+      <span class="question-number">Question ${parseInt(originalIndex) + 1}</span>
+      <span class="question-marks">(${question.marks} marks)</span>
+    </div>
+    <span class="question-type">${questionType}</span>
+  `;
 
   // Create question text
   const questionText = document.createElement("h3");
@@ -543,18 +548,17 @@ function renderNumberInput(container, index) {
 function collectAnswers() {
   const answers = [];
   const questions = document.querySelectorAll(".question");
-  let allAnswered = true;
+  let unansweredQuestions = [];
 
   questions.forEach((questionDiv, index) => {
     const question = quizData.questions[index];
     let answer = null;
+    const questionNumber = parseInt(questionDiv.querySelector('.question-number').textContent.split(' ')[1]);
 
     switch (question.type) {
       case "single":
-        const selected = questionDiv.querySelector(
-          'input[type="radio"]:checked'
-        );
-        if (!selected) allAnswered = false;
+        const selected = questionDiv.querySelector('input[type="radio"]:checked');
+        if (!selected) unansweredQuestions.push(questionNumber);
         answer = selected?.value;
         break;
 
@@ -562,19 +566,19 @@ function collectAnswers() {
         const selectedMultiple = Array.from(
           questionDiv.querySelectorAll('input[type="checkbox"]:checked')
         ).map((input) => input.value);
-        if (!selectedMultiple.length) allAnswered = false;
+        if (!selectedMultiple.length) unansweredQuestions.push(questionNumber);
         answer = selectedMultiple;
         break;
 
       case "text":
         const textInput = questionDiv.querySelector('input[type="text"]');
-        if (!textInput?.value.trim()) allAnswered = false;
+        if (!textInput?.value.trim()) unansweredQuestions.push(questionNumber);
         answer = textInput?.value.trim();
         break;
 
       case "integer":
         const numInput = questionDiv.querySelector('input[type="number"]');
-        if (!numInput?.value) allAnswered = false;
+        if (!numInput?.value) unansweredQuestions.push(questionNumber);
         answer = numInput?.value;
         break;
     }
@@ -586,8 +590,8 @@ function collectAnswers() {
     });
   });
 
-  if (!allAnswered) {
-    alert("Please answer all questions before x.");
+  if (unansweredQuestions.length > 0) {
+    alert(`Please answer all questions before submitting.\nUnanswered questions: ${unansweredQuestions.join(', ')}`);
     return null;
   }
 
@@ -643,60 +647,48 @@ function checkAnswers(answers, questions) {
   return results;
 }
 
-// Update the submit quiz handler
-document
-  .getElementById("submit-quiz-btn")
-  .addEventListener("click", function () {
-    submitQuiz(false);
-  });
+// Update the submit quiz handler and submitQuiz function
+document.getElementById("submit-quiz-btn").addEventListener("click", async function() {
+    const confirmSubmit = confirm("Are you sure you want to submit the quiz?");
+    if (!confirmSubmit) return;
 
-// Update submit quiz function
-async function submitQuiz(isAutoSubmit = false) {
-  const confirmMessage = isAutoSubmit
-    ? "Time is up! Your quiz will be submitted automatically."
-    : "Are you sure you want to submit the quiz?";
-
-  if (isAutoSubmit || confirm(confirmMessage)) {
     const answers = collectAnswers();
-    if (answers) {
-      // Stop the timer
-      stopTimer();
+    if (!answers) return; // collectAnswers will show the alert if not all questions are answered
 
-      // Remove quiz active state
-      document.body.classList.remove("quiz-active");
+    try {
+        // Stop the timer
+        stopTimer();
 
-      // Process results
-      const results = checkAnswers(answers, quizData.questions);
-      const resultJSON = generateResultJSON(results);
+        // Remove quiz active state
+        document.body.classList.remove("quiz-active");
 
-      // Log the submitted data
-      console.log("Submitted Data:", resultJSON);
+        // Process results
+        const results = checkAnswers(answers, quizData.questions);
+        const resultJSON = generateResultJSON(results);
 
-      // ** New Code: Submit the results to the backend API **
-      try {
+        // Submit to backend
         const response = await axios.post("https://quizify-backend-theta.vercel.app/submission", {
-          quizId: quizData.quizId,
-          userDetails: resultJSON.userDetails,
-          submittedAt: resultJSON.submittedAt,
-          score: resultJSON.score,
-          questions: resultJSON.questions,
-          quizDescription: quizData.description, // Include quiz description
+            quizId: id, // Using the quiz ID from URL params
+            userDetails: resultJSON.userDetails,
+            submittedAt: resultJSON.submittedAt,
+            score: resultJSON.score,
+            questions: resultJSON.questions,
+            quizDescription: quizData.description
         });
 
-        console.log("Submission Response:", response.data);
-      } catch (error) {
+        console.log("Submission successful:", response.data);
+
+        // Switch to results section
+        document.getElementById("section-3").style.display = "none";
+        document.getElementById("section-4").style.display = "block";
+
+        // Show results
+        showResults(results);
+    } catch (error) {
         console.error("Error submitting quiz:", error);
         alert("Failed to submit quiz. Please try again.");
-      }
-
-      // Switch to results section
-      document.getElementById("section-3").style.display = "none";
-      document.getElementById("section-4").style.display = "block";
-
-      showResults(results);
     }
-  }
-}
+});
 
 // Prevent page reload and ask for confirmation before reload
 window.onbeforeunload = function(event) {
@@ -1345,3 +1337,14 @@ function showPreQuizWarning() {
 
 // Call this when the quiz loads
 document.addEventListener('DOMContentLoaded', showPreQuizWarning);
+
+// Add this new helper function
+function formatQuestionType(type) {
+  const typeMap = {
+    'single': 'Single Choice',
+    'multiple': 'Multiple Choice',
+    'text': 'Text Answer',
+    'integer': 'Numeric Answer'
+  };
+  return typeMap[type] || type;
+}
