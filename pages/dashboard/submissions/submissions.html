@@ -475,7 +475,7 @@
     <script>
         const urlParams = new URLSearchParams(window.location.search);
         const quizId = urlParams.get('quizId');
-        const apiUrl = `http://localhost:3000/quiz-submissions/${quizId}`;
+        const apiUrl = `https://quizify-backend-theta.vercel.app/quiz-submissions/${quizId}`;
 
         let currentSort = {
             column: null,
