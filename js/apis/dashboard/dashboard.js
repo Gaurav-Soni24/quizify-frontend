@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
   function shareQuiz(quizId) {
-    const shareLink = `http://127.0.0.1:5500/pages/attempt/attempt.html?quizId=${quizId}`;
+    const shareLink = `https://quizify-frontend-jade.vercel.app/pages/attempt/attempt.html?id=${quizId}`;
     navigator.clipboard.writeText(shareLink)
       .then(() => {
         alert('Share link copied to clipboard!');
