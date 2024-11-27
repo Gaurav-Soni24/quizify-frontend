@@ -143,8 +143,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function viewSubmissions(quizId) {
-    // TODO: Implement view submissions functionality
-    console.log(`Viewing submissions for quiz with ID: ${quizId}`);
+    // Redirect to the submissions analysis page with the quiz ID
+    window.location.href = `https://quizify-frontend-jade.vercel.app/pages/dashboard/submissions/submissions.html?quizId=${quizId}`;
   }
   async function deleteQuiz(quizId) {
     try {
