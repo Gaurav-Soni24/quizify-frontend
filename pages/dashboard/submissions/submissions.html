@@ -994,7 +994,7 @@
                 const token = localStorage.getItem('token');
                 const urlParams = new URLSearchParams(window.location.search);
                 const quizId = urlParams.get('quizId');
-                const response = await axios.get(`http://localhost:3000/quiz-submissions/${quizId}`, {
+                const response = await axios.get(`https://quizify-backend-theta.vercel.app/quiz-submissions/${quizId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
