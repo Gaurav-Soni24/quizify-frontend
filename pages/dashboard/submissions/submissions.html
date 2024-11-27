@@ -12,6 +12,7 @@
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         :root {
             --primary-color: #3498db;
@@ -350,6 +351,71 @@
         .show {
             display: block;
         }
+
+        .download-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-btn:hover {
+            background-color: #27ae60;
+        }
+
+        .download-btn i {
+            font-size: 1.2rem;
+        }
+
+        .stats-capture {
+            width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .stats-capture {
+            background: white;
+            padding: 20px;
+            margin: 0;
+            width: 1200px;
+        }
+
+        .stats-capture .analytics-container,
+        .stats-capture .analytics-grid,
+        .stats-capture .content-box {
+            margin-bottom: 30px;
+        }
+
+        .stats-capture canvas {
+            max-width: 100%;
+            height: auto !important;
+        }
+
+        .stats-capture table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .stats-capture th,
+        .stats-capture td {
+            padding: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .stats-capture th {
+            background-color: #f5f5f5;
+        }
     </style>
 </head>
 <body>
@@ -368,8 +434,10 @@
     </header>
 
     <div class="dashboard-header">
-        <h1>Quiz Submissions Analysis</h1>
-        <p>Detailed overview and statistics of student submissions</p>
+        <h1 id="quiz-title">Quiz Submissions</h1>
+        <button onclick="downloadTableData()" class="download-btn">
+            <i class="bi bi-download"></i> Download Submissions
+        </button>
     </div>
 
     <div class="analytics-container">
@@ -599,38 +667,45 @@
             });
         });
 
+        let submissionsData = []; // Global variable to store submissions
+
         async function fetchSubmissions() {
             try {
-                const token = localStorage.getItem('token'); // Retrieve the token from local storage
-                const response = await axios.get(apiUrl, {
-                    headers: {
-                        'Authorization': `Bearer ${token}` // Include the token in the headers
-                    }
-                });
-                const submissions = response.data.submissions;
-                localStorage.setItem('currentSubmissions', JSON.stringify(submissions));
-                displaySubmissions(submissions);
-
-                const tableBody = document.getElementById('submissions-table-body');
-                tableBody.innerHTML = ''; // Clear existing data
-                document.getElementById('error-container').style.display = 'none'; // Hide error message
-                document.getElementById('no-data-message').style.display = 'none'; // Hide no data message
-
-                if (submissions.length === 0) {
-                    document.getElementById('no-data-message').style.display = 'block'; // Show no data message
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/pages/authentication/signin.html';
                     return;
                 }
 
-                if (submissions.length > 0) {
-                    initializeCharts(submissions);
+                // First fetch quiz details to get the title
+                const quizResponse = await axios.get(`https://quizify-backend-theta.vercel.app/public-quiz/${quizId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (quizResponse.data.quiz && quizResponse.data.quiz.title) {
+                    document.getElementById('quiz-title').textContent = quizResponse.data.quiz.title;
                 }
+
+                // Then fetch submissions
+                const response = await axios.get(`https://quizify-backend-theta.vercel.app/quiz-submissions/${quizId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                submissionsData = response.data.submissions; // Store submissions in global variable
+                
+                if (submissionsData.length === 0) {
+                    document.getElementById('no-data-message').style.display = 'block';
+                    return;
+                }
+
+                displaySubmissions(submissionsData);
+                initializeCharts(submissionsData);
             } catch (error) {
-                console.error('Error fetching submissions:', error);
-                const errorMessage = error.response && error.response.status === 404 
-                    ? 'No submissions found for this quiz.' 
-                    : 'Failed to load submissions. Please try again later.';
-                document.getElementById('error-container').innerText = errorMessage;
-                document.getElementById('error-container').style.display = 'block'; // Show error message
+                handleError(error);
             }
         }
 
@@ -884,8 +959,8 @@
             }
         });
 
-        // Fetch submissions on page load
-        fetchSubmissions();
+        // Call fetchSubmissions when the page loads
+        document.addEventListener('DOMContentLoaded', fetchSubmissions);
 
         // Function to download analytics data
         function downloadAnalytics() {
@@ -937,81 +1012,111 @@
             }
         }
 
-        // Function to download table data
+        // Update the downloadTableData function
         function downloadTableData() {
             try {
-                const submissions = JSON.parse(localStorage.getItem('currentSubmissions') || '[]');
-                if (submissions.length === 0) {
-                    alert('No data available to download');
-                    return;
-                }
+                // Create and style the content area
+                const contentArea = document.createElement('div');
+                contentArea.className = 'stats-capture';
+                contentArea.style.background = 'white';
+                contentArea.style.padding = '20px';
+                contentArea.style.width = '1200px';
 
-                // Prepare table data
-                const tableData = [
-                    ['User Email', 'Name', 'Submitted At', 'Score', 'Percentage', 'Questions Details']
+                // Clone and append stats section
+                const statsSection = document.querySelector('.analytics-container').cloneNode(true);
+                contentArea.appendChild(statsSection);
+
+                // Create charts container
+                const chartsContainer = document.createElement('div');
+                chartsContainer.style.display = 'grid';
+                chartsContainer.style.gridTemplateColumns = 'repeat(auto-fit, minmax(300px, 1fr))';
+                chartsContainer.style.gap = '20px';
+                chartsContainer.style.marginBottom = '30px';
+
+                // Get original charts
+                const scoreChart = document.getElementById('scoreChart');
+                const timelineChart = document.getElementById('timelineChart');
+                const questionChart = document.getElementById('questionChart');
+
+                // Create new canvases and copy chart images
+                const charts = [
+                    { original: scoreChart, title: 'Score Distribution' },
+                    { original: timelineChart, title: 'Performance Timeline' },
+                    { original: questionChart, title: 'Question Analysis' }
                 ];
 
-                submissions.forEach(submission => {
-                    const questionsDetails = submission.questions.map(q => 
-                        `Q${q.questionNumber}: ${q.isCorrect ? 'Correct' : 'Incorrect'}`
-                    ).join('; ');
+                // Process each chart
+                charts.forEach(({ original, title }) => {
+                    const chartCard = document.createElement('div');
+                    chartCard.className = 'chart-card';
+                    chartCard.style.background = 'white';
+                    chartCard.style.padding = '20px';
+                    chartCard.style.borderRadius = '10px';
+                    chartCard.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.1)';
 
-                    tableData.push([
-                        submission.userDetails.email,
-                        submission.userDetails.name,
-                        new Date(submission.submittedAt).toLocaleString(),
-                        `${submission.score.obtainedMarks}/${submission.score.totalMarks}`,
-                        `${submission.score.percentage.toFixed(2)}%`,
-                        questionsDetails
-                    ]);
+                    // Add title
+                    const titleElement = document.createElement('h3');
+                    titleElement.textContent = title;
+                    titleElement.style.marginBottom = '15px';
+                    chartCard.appendChild(titleElement);
+
+                    // Create new canvas and copy chart
+                    const newCanvas = document.createElement('canvas');
+                    newCanvas.width = original.width;
+                    newCanvas.height = original.height;
+                    const ctx = newCanvas.getContext('2d');
+                    ctx.drawImage(original, 0, 0);
+
+                    chartCard.appendChild(newCanvas);
+                    chartsContainer.appendChild(chartCard);
                 });
 
-                // Create workbook and add worksheet
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.aoa_to_sheet(tableData);
+                contentArea.appendChild(chartsContainer);
 
-                // Add styling
-                ws['!cols'] = [
-                    { wch: 30 }, // Email
-                    { wch: 20 }, // Name
-                    { wch: 20 }, // Date
-                    { wch: 15 }, // Score
-                    { wch: 15 }, // Percentage
-                    { wch: 50 }  // Questions Details
-                ];
+                // Clone and append table section
+                const tableSection = document.querySelector('.content-box').cloneNode(true);
+                contentArea.appendChild(tableSection);
 
-                XLSX.utils.book_append_sheet(wb, ws, 'Submissions');
-                XLSX.writeFile(wb, 'quiz_submissions.xlsx');
-            } catch (error) {
-                console.error('Error downloading table data:', error);
-                alert('Failed to download submissions. Please try again.');
-            }
-        }
+                // Create temporary container
+                const tempContainer = document.createElement('div');
+                tempContainer.style.position = 'absolute';
+                tempContainer.style.left = '-9999px';
+                tempContainer.appendChild(contentArea);
+                document.body.appendChild(tempContainer);
 
-        // Update fetchSubmissions to store data
-        async function fetchSubmissions() {
-            try {
-                const token = localStorage.getItem('token');
-                const urlParams = new URLSearchParams(window.location.search);
-                const quizId = urlParams.get('quizId');
-                const response = await axios.get(`https://quizify-backend-theta.vercel.app/quiz-submissions/${quizId}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
+                // Capture the image with better quality settings
+                domtoimage.toPng(contentArea, {
+                    quality: 1,
+                    bgcolor: 'white',
+                    height: contentArea.offsetHeight,
+                    width: contentArea.offsetWidth,
+                    style: {
+                        transform: 'scale(1)',
+                        transformOrigin: 'top left',
+                        width: '1200px'
                     }
+                })
+                .then(function (dataUrl) {
+                    const link = document.createElement('a');
+                    const quizTitle = document.getElementById('quiz-title').textContent || 'Quiz';
+                    const safeTitle = quizTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                    const filename = `${safeTitle}_stats_${new Date().toISOString().split('T')[0]}.png`;
+                    
+                    link.download = filename;
+                    link.href = dataUrl;
+                    link.click();
+
+                    // Cleanup
+                    document.body.removeChild(tempContainer);
+                })
+                .catch(function (error) {
+                    console.error('Error generating image:', error);
+                    alert('Failed to generate stats image. Please try again.');
                 });
 
-                const submissions = response.data.submissions;
-                localStorage.setItem('currentSubmissions', JSON.stringify(submissions));
-
-                if (submissions.length === 0) {
-                    document.getElementById('no-data-message').style.display = 'block';
-                    return;
-                }
-
-                displaySubmissions(submissions);
-                initializeCharts(submissions);
             } catch (error) {
-                handleError(error);
+                console.error('Error downloading stats:', error);
+                alert('Failed to download stats. Please try again.');
             }
         }
 
