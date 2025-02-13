@@ -51,18 +51,7 @@
    ```bash
    npm start
    ```
-
-## 🖼️ Screenshots
-
-| **Feature** | **Description** |
-|-------------|-----------------|
-| ![Quiz Interface](https://via.placeholder.com/400) | Clean and intuitive quiz-taking interface. |
-| ![Anti-cheating Alert](https://via.placeholder.com/400) | Alert when a participant switches tabs. |
-
-## 🔗 Live Demo
-
-[🚀 Quizify Live](https://lnkd.in/d3y-d7aT)
-
+   
 ## 🤝 Contributing
 
 Contributions are welcome! If you have ideas for improving Quizify or new anti-cheating mechanisms, feel free to fork the repo and create a pull request.
