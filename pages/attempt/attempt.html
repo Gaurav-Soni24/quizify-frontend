@@ -496,17 +496,16 @@
 
     async function loadFaceAPIModels() {
         try {
-            // Note: You MUST host these weights on your server in a /models directory.
-            // For testing, you can point to a public raw github url, but it's risky for production.
-            // Assuming models are at root/models.
-            const MODEL_URL = '/models'; 
+            // CHANGED: Pointing directly to the official hosted models for instant testing
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
             
             await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
             modelsLoaded = true;
             checkReadyState();
         } catch(e) {
             console.error("Error loading face models:", e);
-            document.getElementById('cam-status').innerText = "Failed to load AI models. Check console.";
+            // This will make sure the error stays visible if it fails
+            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);"><i class="bi bi-x-circle-fill"></i> Failed to load AI models. Please check the browser console.</span>`;
         }
     }
 
