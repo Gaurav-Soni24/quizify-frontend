@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Attempt Quiz - Quizify Secure</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -32,25 +32,21 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     
-    /* NEW: Prevent Text Selection Globally */
+    /* PREVENT TEXT COPYING GLOBALLY */
     body { 
         background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; 
         display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
-        -webkit-user-select: none; /* Safari */
-        -ms-user-select: none; /* IE 10 and IE 11 */
-        user-select: none; /* Standard syntax */
+        -webkit-user-select: none; -ms-user-select: none; user-select: none;
     }
 
-    /* Allow selection only inside specific inputs if needed (though we disabled copy/paste) */
+    /* Allow typing in specific inputs */
     input[type="text"], input[type="number"], textarea {
-        -webkit-user-select: text;
-        -ms-user-select: text;
-        user-select: text;
+        -webkit-user-select: text; -ms-user-select: text; user-select: text;
     }
 
     /* --- Container & Cards --- */
     .container { width: 100%; max-width: 1000px; margin: auto; }
-    .card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); margin-bottom: 24px; animation: fadeIn 0.4s ease-out;}
+    .card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
     h1, h2, h3 { color: var(--text-main); font-weight: 700; }
@@ -67,7 +63,7 @@
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background-color: var(--primary-purple); color: white; }
     .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
-    .btn-primary:disabled { background-color: #a78bfa; cursor: not-allowed; }
+    .btn-primary:disabled { background-color: #a78bfa; cursor: not-allowed; transform: none; }
     .btn-success { background-color: var(--success-green); color: white; }
     .btn-success:hover { background-color: #059669; }
 
@@ -98,7 +94,7 @@
     .legend-item { display: flex; align-items: center; gap: 8px; }
     .legend-color { width: 16px; height: 16px; border-radius: 4px; }
 
-    .question-area { flex: 1; }
+    .question-area { flex: 1; width: 100%; }
     .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
     .question-card.active { display: block; animation: fadeIn 0.3s ease; }
     .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
@@ -109,7 +105,7 @@
     .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px;}
     .option-label { display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: #f9fafb;}
     .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
-    .option-label input { width: 18px; height: 18px; accent-color: var(--primary-purple); }
+    .option-label input { width: 18px; height: 18px; accent-color: var(--primary-purple); flex-shrink: 0;}
     
     .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
     .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
@@ -118,58 +114,130 @@
     .btn-mark { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
     .btn-mark:hover { background: #fef3c7; }
 
-    /* --- Widgets (Timer & Webcam) --- */
+    /* --- Widgets --- */
     .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000; transition: all 0.3s;}
     .timer-widget.warning { border-color: var(--danger-red); color: var(--danger-red); animation: pulse 1s infinite; }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-    /* NEW: Webcam PIP Feed */
-    .webcam-container {
-        position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px;
-        background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green);
-        box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; transition: border-color 0.3s;
-    }
+    .webcam-container { position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px; background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; transition: border-color 0.3s; }
     .webcam-container.warning { border-color: var(--danger-red); }
     #webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     .webcam-overlay { position: absolute; bottom: 4px; left: 0; width: 100%; text-align: center; color: white; font-size: 0.75rem; font-weight: 600; text-shadow: 1px 1px 2px black;}
 
-    /* --- Warning Modal --- */
+    /* --- Modals & Overlays --- */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;}
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s;}
     .modal-overlay.show .modal-content { transform: scale(1); }
     .modal-content i { font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;}
-    .modal-content h3 { font-size: 1.5rem; margin-bottom: 12px; }
-    .modal-content p { color: var(--text-muted); margin-bottom: 24px; }
-
-    /* --- Results Section --- */
+    
     .results-capture { background: white; padding: 40px; border-radius: 12px; text-align: center; }
     .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #f5f3ff; border: 8px solid var(--primary-purple); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; }
     .score-circle .percentage { font-size: 2rem; font-weight: 800; color: var(--primary-purple); }
-    .score-circle .fraction { font-size: 1rem; color: var(--text-muted); font-weight: 600;}
-    .status-pass { color: var(--success-green); font-size: 1.5rem; font-weight: 700; margin-bottom: 32px;}
-    .status-fail { color: var(--danger-red); font-size: 1.5rem; font-weight: 700; margin-bottom: 32px;}
     
-    .breakdown-item { text-align: left; background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--border-color);}
-    .breakdown-item.correct { border-left-color: var(--success-green); }
-    .breakdown-item.incorrect { border-left-color: var(--danger-red); }
-
-    /* Google Login Wrapper */
     .google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0; }
 
+    /* ========================================= */
+    /* MOBILE RESPONSIVENESS & PALETTE TOGGLE    */
+    /* ========================================= */
+    
+    /* Hidden elements by default (Desktop) */
+    .palette-toggle-btn { display: none; }
+    .close-palette-btn { display: none; }
+    .palette-overlay-mobile { display: none; }
+
     @media (max-width: 768px) {
-      .quiz-layout { flex-direction: column; }
-      .question-palette { width: 100%; position: static; margin-bottom: 24px; }
-      .timer-widget { top: auto; bottom: 20px; right: 50%; transform: translateX(50%); width: auto; font-size: 1rem; }
-      .card { padding: 24px; }
-      .webcam-container { top: 20px; bottom: auto; right: 20px; width: 120px; height: 90px; }
+      body { padding: 10px; }
+      
+      /* Scale down sizing and padding */
+      .card { padding: 20px 16px; margin-bottom: 16px; }
+      .section-header h1 { font-size: 1.5rem; }
+      .section-header p { font-size: 0.95rem; }
+      .q-number { font-size: 1.1rem; }
+      .q-text { font-size: 1rem; margin-bottom: 16px; }
+      .question-card { padding: 20px 16px; }
+      .option-label { padding: 12px; font-size: 0.95rem;}
+      .btn { padding: 12px 16px; font-size: 1rem; }
+      
+      /* Relocate Widgets */
+      .timer-widget { top: 10px; right: 10px; padding: 8px 16px; font-size: 1rem; }
+      .webcam-container { top: 10px; bottom: auto; right: auto; left: 10px; width: 100px; height: 75px; border-width: 2px;}
+      .webcam-overlay { font-size: 0.6rem; }
+      .nav-buttons { flex-direction: column; gap: 12px;}
+
+      /* Off-Canvas Mobile Question Palette */
+      .quiz-layout { display: block; }
+      .question-palette {
+          position: fixed;
+          top: 0;
+          left: -320px; /* Hidden off-screen */
+          width: 300px;
+          height: 100vh;
+          z-index: 3000; /* High z-index to slide over everything */
+          margin: 0;
+          border-radius: 0;
+          border-right: 1px solid var(--border-color);
+          box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+          transition: left 0.3s ease;
+          overflow-y: auto;
+      }
+      .question-palette.open { left: 0; }
+      
+      /* Mobile Toggle FAB (Floating Action Button) */
+      .palette-toggle-btn {
+          display: flex;
+          position: fixed;
+          bottom: 20px;
+          left: 20px;
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          background: var(--primary-purple);
+          color: white;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          box-shadow: 0 4px 12px rgba(85, 66, 246, 0.4);
+          z-index: 2000;
+          font-size: 1.5rem;
+          cursor: pointer;
+      }
+
+      /* Close Button Inside Palette */
+      .close-palette-btn {
+          display: block;
+          background: none;
+          border: none;
+          font-size: 1.5rem;
+          color: var(--text-muted);
+          cursor: pointer;
+      }
+
+      .palette-header-mobile {
+          display: flex !important; 
+          justify-content: space-between; 
+          align-items: center; 
+          margin-bottom: 20px;
+          border-bottom: 1px solid var(--border-color);
+          padding-bottom: 12px;
+      }
+
+      /* Dark Overlay behind the open menu */
+      .palette-overlay-mobile {
+          display: none;
+          position: fixed;
+          top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.6);
+          z-index: 2500;
+      }
+      .palette-overlay-mobile.show { display: block; }
     }
   </style>
 </head>
 <body>
 
   <div id="g_id_onload"
-       data-client_id="643259489574-rd4r68ma879oftas8cvi1p36iqtb2ag2.apps.googleusercontent.com"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
        data-context="signin"
        data-ux_mode="popup"
        data-callback="handleGoogleLogin"
@@ -192,17 +260,9 @@
       
       <div id="auth-container" style="display: none; text-align: center;">
         <h3 style="margin-bottom: 16px; font-size: 1.2rem; border-bottom: 2px solid var(--primary-purple); padding-bottom: 8px; display: inline-block;">Student Verification</h3>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Please sign in with your Google account to verify your identity. This email will be used for your official result.</p>
-        
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Please sign in with your Google account to verify your identity.</p>
         <div class="google-btn-wrapper">
-            <div class="g_id_signin"
-                 data-type="standard"
-                 data-shape="rectangular"
-                 data-theme="outline"
-                 data-text="continue_with"
-                 data-size="large"
-                 data-logo_alignment="left">
-            </div>
+            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
         </div>
       </div>
 
@@ -214,7 +274,6 @@
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="verified-email">email@example.com</p>
             </div>
         </div>
-        
         <div id="dynamic-fields"></div>
         <button type="submit" class="btn btn-primary" id="btn-details">
             <span>Continue to Instructions</span> <i class="bi bi-arrow-right"></i>
@@ -231,9 +290,11 @@
       <div class="anti-cheat-warning">
         <h4><i class="bi bi-shield-lock-fill"></i> Strict AI Proctoring Enabled</h4>
         <ul style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
-            <li><strong>Face Tracking:</strong> Your webcam will monitor your head movement. If you look away from the screen continuously, you will be warned. 3 warnings = Auto Termination.</li>
-            <li><strong>Tab Switching:</strong> Leaving the quiz tab will trigger a warning. 3 warnings = Auto Termination.</li>
-            <li><strong>Copy/Paste:</strong> Copying text, pasting text, and right-clicking are strictly disabled and monitored.</li>
+            <li><strong>Face Identity Lock:</strong> The AI locks onto your face. If another person sits in front of the camera, the exam terminates instantly.</li>
+            <li><strong>Face Tracking:</strong> Looking away from the screen or excessive movement triggers warnings.</li>
+            <li><strong>Tab Switching:</strong> Leaving the quiz tab triggers a warning.</li>
+            <li><strong>Copy/Paste Disabled:</strong> Copying, pasting, and right-clicking are prohibited.</li>
+            <li style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">3 warnings = Auto Termination.</li>
         </ul>
       </div>
 
@@ -248,7 +309,7 @@
 
       <label class="agreement">
         <input type="checkbox" id="agree-checkbox" disabled>
-        <span>I have read the instructions, granted camera permissions, and agree to the anti-cheating policy.</span>
+        <span>I have read the instructions, granted camera permissions, and agree to the AI anti-cheating policy.</span>
       </label>
 
       <button id="start-quiz-btn" class="btn btn-primary" disabled>
@@ -257,18 +318,31 @@
     </div>
 
     <div id="section-3" style="display: none;">
+      
+      <button class="palette-toggle-btn" id="mobile-palette-toggle" title="View Question Palette">
+          <i class="bi bi-grid-3x3-gap-fill"></i>
+      </button>
+
+      <div class="palette-overlay-mobile" id="mobile-palette-overlay"></div>
+
       <div id="timer" class="timer-widget" style="display: none;">
         <i class="bi bi-stopwatch"></i> <span id="time-display">--:--</span>
       </div>
 
       <div class="webcam-container" id="webcam-container">
           <video id="webcam-video" autoplay muted playsinline></video>
-          <div class="webcam-overlay" id="webcam-overlay-text">AI Monitoring Active</div>
+          <div class="webcam-overlay" id="webcam-overlay-text">AI Initializing...</div>
       </div>
 
       <div class="quiz-layout">
-        <aside class="question-palette">
-          <h3>Question Palette</h3>
+        
+        <aside class="question-palette" id="question-palette">
+          <div class="palette-header-mobile" style="display: none;">
+              <h3 style="margin:0;">Questions</h3>
+              <button class="close-palette-btn" id="close-palette-btn"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <h3 class="desktop-palette-title" style="display: block;">Question Palette</h3>
+          
           <div class="palette-grid" id="palette-grid"></div>
           <div class="legend">
             <div class="legend-item"><div class="legend-color" style="border: 2px solid var(--border-color); background: white;"></div> Not Visited</div>
@@ -315,7 +389,9 @@
   </div>
 
   <script>
-    // --- Global Config & State ---
+    // ==========================================
+    // GLOBAL CONFIG & STATE
+    // ==========================================
     const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get("id");
@@ -324,37 +400,68 @@
     let userDetails = {};
     let currentQuestionIndex = 0;
     
-    // --- Advanced Anti-Cheat State ---
+    // Limits
     const MAX_WARNINGS = 3; 
     let tabSwitchCount = 0;
     let webcamStrikes = 0;
     let copyPasteAttempts = 0;
+    let identitySwapDetected = false;
     let isQuizActive = false;
     let autoSubmitted = false;
 
-    // Webcam/Face-API Variables
+    // AI Tracking State
     let videoEl = document.getElementById('webcam-video');
     let faceDetectionInterval = null;
-    let noFaceFrames = 0; 
-    const MAX_NO_FACE_FRAMES = 5; // e.g., 5 seconds out of focus
-
-    // Timer State
-    let timerInterval = null;
-    let secondsRemaining = 0;
+    let modelsLoaded = false;
+    
+    let baselineFaceDescriptor = null;
+    const FACE_MATCH_THRESHOLD = 0.55; 
+    
     let lastFaceCenter = null;
     let excessiveMovementFrames = 0;
-    const MOVEMENT_THRESHOLD = 50; // Sensitivity in pixels (lower = stricter)
-    const MAX_MOVEMENT_FRAMES = 3;
+    const MOVEMENT_THRESHOLD = 50; 
+    const MAX_MOVEMENT_FRAMES = 3; 
+    
+    let noFaceFrames = 0; 
+    const MAX_NO_FACE_FRAMES = 5; 
 
-    // UI Elements
+    let timerInterval = null;
+    let secondsRemaining = 0;
+
     const s1 = document.getElementById('section-1');
     const s2 = document.getElementById('section-2');
     const s3 = document.getElementById('section-3');
     const s4 = document.getElementById('section-4');
-    const errState = document.getElementById('error-state');
 
     // ==========================================
-    // 1. INITIALIZATION & DATA FETCHING
+    // 1. MOBILE PALETTE TOGGLE LOGIC
+    // ==========================================
+    const mobileToggle = document.getElementById('mobile-palette-toggle');
+    const mobileOverlay = document.getElementById('mobile-palette-overlay');
+    const paletteMenu = document.getElementById('question-palette');
+    const closePaletteBtn = document.getElementById('close-palette-btn');
+
+    function openMobilePalette() {
+        paletteMenu.classList.add('open');
+        mobileOverlay.classList.add('show');
+    }
+    function closeMobilePalette() {
+        paletteMenu.classList.remove('open');
+        mobileOverlay.classList.remove('show');
+    }
+
+    mobileToggle.addEventListener('click', openMobilePalette);
+    closePaletteBtn.addEventListener('click', closeMobilePalette);
+    mobileOverlay.addEventListener('click', closeMobilePalette);
+
+    // Hide desktop title in mobile
+    if (window.innerWidth <= 768) {
+        document.querySelector('.desktop-palette-title').style.display = 'none';
+    }
+
+
+    // ==========================================
+    // 2. INITIALIZATION
     // ==========================================
     async function init() {
         if (!quizId) return showError("Invalid Link", "No Quiz ID was provided in the URL.");
@@ -363,7 +470,6 @@
             const res = await axios.get(`${API_BASE_URL}/public-quiz/${quizId}`);
             quizData = res.data.quiz;
             
-            // Shuffle Logic
             if(quizData.settings?.shuffleQuestions) {
                 const indices = Array.from({length: quizData.questions.length}, (_, i) => i);
                 for (let i = indices.length - 1; i > 0; i--) {
@@ -377,50 +483,40 @@
 
             document.getElementById('intro-title').textContent = quizData.title;
             document.getElementById('intro-desc').textContent = quizData.description;
-            
-            // Show Google Auth instead of manual form
             document.getElementById('auth-container').style.display = 'block';
 
-            // Pre-load Face API Models in the background while user logs in
             loadFaceAPIModels();
-
         } catch (error) {
-            console.error(error);
             showError("Quiz Not Found", "The quiz you are looking for does not exist or is set to private.");
         }
     }
 
     function showError(title, msg) {
         s1.style.display = 'none'; s2.style.display = 'none'; s3.style.display = 'none'; s4.style.display = 'none';
-        errState.style.display = 'block';
+        document.getElementById('error-state').style.display = 'block';
         document.getElementById('error-title').textContent = title;
         document.getElementById('error-msg').textContent = msg;
     }
 
     // ==========================================
-    // 2. GOOGLE AUTH & DETAILS FORM
+    // 3. GOOGLE AUTH & DETAILS
     // ==========================================
     async function handleGoogleLogin(response) {
         try {
-            // Verify token on the backend
             const res = await axios.post(`${API_BASE_URL}/verify-google-attempt`, {
-                quizId: quizId,
-                credential: response.credential
+                quizId: quizId, credential: response.credential
             });
             
             userDetails.email = res.data.email;
             userDetails.name = res.data.name;
 
-            // Hide Auth, Show dynamic fields for any remaining requirements
             document.getElementById('auth-container').style.display = 'none';
-            
             document.getElementById('verified-name').textContent = userDetails.name;
             document.getElementById('verified-email').textContent = userDetails.email;
             
             buildDetailsForm();
-
         } catch (error) {
-            alert(error.response?.data?.error || "Google Authentication failed. You may have already taken this quiz.");
+            alert(error.response?.data?.error || "Authentication failed. You may have already taken this quiz.");
         }
     }
 
@@ -432,7 +528,6 @@
         const fields = quizData.requiredFields || {};
         let html = '';
 
-        // Email and Name are handled by Google. Ask for the rest if required.
         if(fields.institution) html += `<div class="form-group"><label>Institution/School *</label><input type="text" name="institution" required></div>`;
         if(fields.department) html += `<div class="form-group"><label>Department/Field *</label><input type="text" name="department" required></div>`;
         if(fields.phone) html += `<div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required></div>`;
@@ -452,8 +547,23 @@
     }
 
     // ==========================================
-    // 3. INSTRUCTIONS & WEBCAM SETUP
+    // 4. INSTRUCTIONS & AI SETUP
     // ==========================================
+    async function loadFaceAPIModels() {
+        try {
+            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
+            await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+            ]);
+            modelsLoaded = true;
+            checkReadyState();
+        } catch(e) {
+            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);"><i class="bi bi-x-circle-fill"></i> Failed to load AI models. Please check network.</span>`;
+        }
+    }
+
     function buildInstructions() {
         const container = document.getElementById('instructions-container');
         let html = `<ul>
@@ -461,25 +571,16 @@
             <li><strong>Passing Score:</strong> ${quizData.passingScore}%</li>
         `;
         if(quizData.timeLimit) html += `<li><strong>Time Limit:</strong> ${quizData.timeLimit} Minutes</li>`;
-        
-        if(quizData.teacherInstructions) {
-            html += `<br><li style="list-style:none; padding-left:0; color:#111827;"><strong>Teacher's Notes:</strong></li>`;
-            quizData.teacherInstructions.split('\n').forEach(note => {
-                if(note.trim()) html += `<li>${note}</li>`;
-            });
-        }
         html += `</ul>`;
         container.innerHTML = html;
 
-        // Camera Button Logic
         document.getElementById('btn-enable-cam').addEventListener('click', async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                // Modified constraints for mobile front-camera priority
+                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
                 videoEl.srcObject = stream;
                 document.getElementById('btn-enable-cam').style.display = 'none';
-                document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> Camera enabled successfully. Models loading...`;
-                
-                // Enable checkbox only if models are also loaded
+                document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> Camera enabled. Validating AI...`;
                 checkReadyState();
             } catch (err) {
                 document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Camera access denied. You cannot proceed.</span>`;
@@ -493,100 +594,82 @@
         document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
     }
 
-    // ==========================================
-    // 4. FACE-API & ANTI-CHEAT LOGIC
-    // ==========================================
-    let modelsLoaded = false;
-
-    async function loadFaceAPIModels() {
-        try {
-            // CHANGED: Pointing directly to the official hosted models for instant testing
-            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
-            
-            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
-            modelsLoaded = true;
-            checkReadyState();
-        } catch(e) {
-            console.error("Error loading face models:", e);
-            // This will make sure the error stays visible if it fails
-            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);"><i class="bi bi-x-circle-fill"></i> Failed to load AI models. Please check the browser console.</span>`;
-        }
-    }
-
     function checkReadyState() {
         if (modelsLoaded && videoEl.srcObject) {
-            document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> AI Proctoring Ready.`;
+            document.getElementById('cam-status').innerHTML = `<i class="bi bi-shield-check" style="color:var(--primary-purple);"></i> AI Proctoring Engine Ready.`;
             document.getElementById('agree-checkbox').disabled = false;
         }
     }
 
+    // ==========================================
+    // 5. AI PROCTORING ENGINE
+    // ==========================================
     function startFaceDetection() {
         document.getElementById('webcam-container').style.display = 'block';
         
         faceDetectionInterval = setInterval(async () => {
             if(!isQuizActive) return;
 
-            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions());
+            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions())
+                                            .withFaceLandmarks()
+                                            .withFaceDescriptors();
+            
             const overlayText = document.getElementById('webcam-overlay-text');
             const webcamContainer = document.getElementById('webcam-container');
             
-            // 1. NO FACE DETECTED
             if (detections.length === 0) {
                 noFaceFrames++;
                 webcamContainer.classList.add('warning');
                 overlayText.textContent = "FACE NOT DETECTED";
                 overlayText.style.color = "var(--danger-red)";
-
                 if (noFaceFrames >= MAX_NO_FACE_FRAMES) {
                     triggerStrike("Webcam Focus Lost", "You have looked away from the screen or left the camera view.");
-                    noFaceFrames = 0; // Reset after issuing a strike
+                    noFaceFrames = 0; 
                 }
-                lastFaceCenter = null; // Reset tracking
+                lastFaceCenter = null; 
             } 
-            // 2. MULTIPLE FACES DETECTED
             else if (detections.length > 1) {
                 webcamContainer.classList.add('warning');
                 overlayText.textContent = "MULTIPLE FACES DETECTED";
                 overlayText.style.color = "var(--danger-red)";
-                
-                // Instantly trigger a strike for multiple people
                 triggerStrike("Multiple Faces Detected", "Only one person is allowed in the frame during the exam.");
                 lastFaceCenter = null;
             } 
-            // 3. EXACTLY ONE FACE (Normal State + Movement Check)
             else {
-                noFaceFrames = 0; // Reset no-face counter
-                
-                // Calculate current face center
-                const faceBox = detections[0].box;
-                const currentCenter = {
-                    x: faceBox.x + faceBox.width / 2,
-                    y: faceBox.y + faceBox.height / 2
-                };
+                noFaceFrames = 0; 
+                const currentDescriptor = detections[0].descriptor;
 
-                // Check for excessive movement if we have a previous frame to compare
+                if (!baselineFaceDescriptor) {
+                    baselineFaceDescriptor = currentDescriptor;
+                    overlayText.textContent = "Identity Locked";
+                } else {
+                    const distance = faceapi.euclideanDistance(baselineFaceDescriptor, currentDescriptor);
+                    if (distance > FACE_MATCH_THRESHOLD) {
+                        identitySwapDetected = true;
+                        autoSubmitted = true;
+                        autoSubmitQuiz("Identity Swap Detected! The person taking the exam has changed. Exam Terminated.");
+                        return; 
+                    }
+                }
+
+                const faceBox = detections[0].detection.box;
+                const currentCenter = { x: faceBox.x + faceBox.width / 2, y: faceBox.y + faceBox.height / 2 };
+
                 if (lastFaceCenter) {
-                    // Calculate Euclidean distance between last frame and current frame
                     const distance = Math.sqrt(
-                        Math.pow(currentCenter.x - lastFaceCenter.x, 2) + 
-                        Math.pow(currentCenter.y - lastFaceCenter.y, 2)
+                        Math.pow(currentCenter.x - lastFaceCenter.x, 2) + Math.pow(currentCenter.y - lastFaceCenter.y, 2)
                     );
-
                     if (distance > MOVEMENT_THRESHOLD) {
                         excessiveMovementFrames++;
                         webcamContainer.classList.add('warning');
                         overlayText.textContent = "EXCESSIVE MOVEMENT";
                         overlayText.style.color = "var(--warning-yellow)";
-
                         if (excessiveMovementFrames >= MAX_MOVEMENT_FRAMES) {
                             triggerStrike("Excessive Movement", "Please keep your head stable and focused on the screen.");
-                            excessiveMovementFrames = 0; // Reset after strike
+                            excessiveMovementFrames = 0; 
                         }
                     } else {
-                        // Slowly decay the movement counter if they stabilize
                         excessiveMovementFrames = Math.max(0, excessiveMovementFrames - 1);
-                        
-                        // All good - UI Green State
                         if (excessiveMovementFrames === 0) {
                             webcamContainer.classList.remove('warning');
                             overlayText.textContent = "AI Monitoring Active";
@@ -594,52 +677,48 @@
                         }
                     }
                 }
-                
-                // Store current position for the next frame check
                 lastFaceCenter = currentCenter;
             }
-        }, 1000); // Scans 1 time per second
+        }, 1000); 
     }
 
-    // Generic Strike Function for Anti-Cheat
     function triggerStrike(title, description) {
         if(!isQuizActive) return;
         
         let totalStrikes = 0;
-        if(title === "Tab Switch Detected") { tabSwitchCount++; totalStrikes = tabSwitchCount; }
-        if(title === "Webcam Focus Lost") { webcamStrikes++; totalStrikes = webcamStrikes; }
+        if(title === "Tab Switch Detected") { tabSwitchCount++; }
+        else { webcamStrikes++; } 
         
-        // If combined strikes across any vector exceed max
-        const combinedStrikes = tabSwitchCount + webcamStrikes;
+        totalStrikes = tabSwitchCount + webcamStrikes;
 
-        if (combinedStrikes >= MAX_WARNINGS) {
+        if (totalStrikes >= MAX_WARNINGS) {
             autoSubmitted = true;
-            autoSubmitQuiz(`Anti-Cheat Enforcement: Terminated due to multiple violations.`);
+            autoSubmitQuiz(`Anti-Cheat Enforcement: Terminated due to maximum rule violations (${MAX_WARNINGS}).`);
         } else {
-            showWarningModal(title, description, MAX_WARNINGS - combinedStrikes);
+            showWarningModal(title, description, MAX_WARNINGS - totalStrikes);
         }
     }
 
-    // Monitor Tab Switching
+    // BROWSER ANTI-CHEAT RESTRICTIONS
     document.addEventListener("visibilitychange", () => {
         if(document.hidden && isQuizActive) {
             triggerStrike("Tab Switch Detected", "You minimized the browser or switched tabs. This is prohibited.");
         }
     });
 
-    // Disable Copy/Paste/Context Menu
-    document.addEventListener('contextmenu', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
-    document.addEventListener('copy', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
-    document.addEventListener('cut', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
-    document.addEventListener('paste', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
+    const restrictEvent = (e) => { 
+        if(isQuizActive) { e.preventDefault(); copyPasteAttempts++; }
+    };
+    document.addEventListener('contextmenu', restrictEvent);
+    document.addEventListener('copy', restrictEvent);
+    document.addEventListener('cut', restrictEvent);
+    document.addEventListener('paste', restrictEvent);
 
-    // Disable keyboard shortcuts (Ctrl+C, Ctrl+V, etc.)
     document.addEventListener('keydown', (e) => {
         if (isQuizActive && (e.ctrlKey || e.metaKey)) {
             const blockedKeys = ['c', 'v', 'x', 'p', 's', 'a'];
             if (blockedKeys.includes(e.key.toLowerCase())) {
-                e.preventDefault();
-                copyPasteAttempts++;
+                e.preventDefault(); copyPasteAttempts++;
             }
         }
     });
@@ -654,7 +733,7 @@
 
 
     // ==========================================
-    // 5. QUIZ ENGINE
+    // 6. QUIZ ENGINE LOGIC
     // ==========================================
     function startQuiz() {
         s2.style.display = 'none';
@@ -668,7 +747,6 @@
         buildQuestions();
         showQuestion(0);
 
-        // Request Fullscreen for extra security (optional but recommended)
         try { document.documentElement.requestFullscreen(); } catch(e){}
     }
 
@@ -681,7 +759,7 @@
         timerInterval = setInterval(() => {
             if(secondsRemaining <= 0) {
                 clearInterval(timerInterval);
-                autoSubmitQuiz("Time's Up!");
+                autoSubmitQuiz("Time's Up! Your quiz has been submitted.");
                 return;
             }
             secondsRemaining--;
@@ -740,6 +818,11 @@
         document.getElementById(`q-card-${index}`).classList.add('active');
         document.getElementById(`pal-btn-${index}`).classList.add('active');
         currentQuestionIndex = index;
+
+        // Auto-close palette on mobile when a question is clicked
+        if(window.innerWidth <= 768) {
+            closeMobilePalette();
+        }
     }
 
     function markAnswered(index) {
@@ -758,7 +841,7 @@
     function toggleMarkReview(index) { document.getElementById(`pal-btn-${index}`).classList.toggle('marked'); }
 
     // ==========================================
-    // 6. SUBMISSION & RESULTS
+    // 7. SUBMISSION & RESULTS
     // ==========================================
     document.getElementById('btn-final-submit').addEventListener('click', () => {
         if(confirm("Are you sure you want to submit? You cannot change answers after this.")) {
@@ -768,7 +851,7 @@
 
     function autoSubmitQuiz(reason) {
         closeWarningModal();
-        alert(`${reason}\nYour quiz has been automatically submitted.`);
+        alert(reason);
         processSubmission();
     }
 
@@ -778,12 +861,11 @@
         clearInterval(faceDetectionInterval);
         
         // Stop Webcam
-        if(videoEl.srcObject) {
-            videoEl.srcObject.getTracks().forEach(track => track.stop());
-        }
+        if(videoEl.srcObject) { videoEl.srcObject.getTracks().forEach(track => track.stop()); }
         document.getElementById('webcam-container').style.display = 'none';
+        document.getElementById('mobile-palette-toggle').style.display = 'none';
+        closeMobilePalette();
         
-        // Exit Fullscreen
         try { if(document.fullscreenElement) document.exitFullscreen(); } catch(e){}
 
         document.getElementById('btn-final-submit').disabled = true;
@@ -844,10 +926,10 @@
                 percentage: parseFloat(percentage.toFixed(2))
             },
             questions: results,
-            // Anti-Cheat Variables sent to backend
             tabSwitches: tabSwitchCount,
             webcamStrikes: webcamStrikes,
             copyPasteAttempts: copyPasteAttempts,
+            identitySwapDetected: identitySwapDetected,
             wasAutoSubmitted: autoSubmitted,
             isFlagged: autoSubmitted || (tabSwitchCount > 0) || (webcamStrikes > 0) || (copyPasteAttempts > 3)
         };
