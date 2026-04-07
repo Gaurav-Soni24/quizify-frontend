@@ -4,15 +4,525 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizify - Create and Manage Quizzes</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- COLOR SCHEME & VARIABLES EXTRACTED FROM SCREENSHOT --- */
+        :root {
+            --primary-purple: #5542F6; /* Matches the 'Quick Create' button */
+            --primary-hover: #4836d4;
+            --accent-orange: #F59E0B;  /* Matches the 'CRM' active state */
+            --success-green: #10B981;  /* Matches the positive growth metrics */
+            --background-color: #F8F9FA; /* Light off-white dashboard background */
+            --card-bg-color: #ffffff;
+            --text-main: #111827;      /* Dark text for headings */
+            --text-muted: #6B7280;     /* Lighter text for secondary info */
+            --border-color: #F3F4F6;
+            --radius-lg: 20px;         /* Dashboard-style rounded corners */
+            --radius-md: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-main);
+            background-color: var(--background-color);
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 16px 5%;
+            background-color: var(--background-color);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--card-bg-color);
+            padding: 12px 24px;
+            border-radius: 100px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border-color);
+        }
+
+        .logo img {
+            width: 140px;
+            transition: transform 0.3s ease;
+            display: block;
+        }
+
+        .logo img:hover {
+            transform: scale(1.05);
+        }
+
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-item {
+            margin-left: 8px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.95rem;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text-main);
+            background-color: var(--background-color);
+        }
+
+        .nav-link.active {
+            color: white;
+            background-color: var(--accent-orange);
+        }
+
+        .login-btn {
+            background-color: var(--primary-purple);
+            color: white !important;
+            font-weight: 600;
+            padding: 10px 24px;
+            border-radius: 100px;
+            margin-left: 16px;
+            box-shadow: 0 4px 12px rgba(85, 66, 246, 0.2);
+        }
+
+        .login-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(85, 66, 246, 0.3);
+        }
+
+        /* --- MAIN HERO SECTION --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .hero-container {
+            max-width: 1200px;
+            width: 100%;
+            padding: 80px 20px 40px;
+            margin: 0 auto;
+        }
+
+        .hero {
+            background-color: var(--card-bg-color);
+            border-radius: var(--radius-lg);
+            padding: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.02);
+            border: 1px solid var(--border-color);
+            animation: fadeIn 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Subtle decorative background shape */
+        .hero::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(85, 66, 246, 0.1), rgba(245, 158, 11, 0.1));
+            border-radius: 50%;
+            top: -100px;
+            right: -50px;
+            z-index: 0;
+            filter: blur(40px);
+        }
+
+        .hero-content {
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+            padding-right: 40px;
+            z-index: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--success-green);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .hero-content h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            font-weight: 800;
+            line-height: 1.1;
+            color: var(--text-main);
+            letter-spacing: -1px;
+        }
+
+        .hero-content p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+            color: var(--text-muted);
+        }
+
+        .cta-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            background-color: var(--primary-purple);
+            color: #fff;
+            padding: 16px 32px;
+            text-decoration: none;
+            border-radius: 100px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            font-size: 1.1em;
+            box-shadow: 0 8px 20px rgba(85, 66, 246, 0.25);
+        }
+
+        .cta-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+        }
+
+        .know-more {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            padding: 16px 24px;
+            border-radius: 100px;
+            background-color: var(--background-color);
+            transition: all 0.3s ease;
+        }
+
+        .know-more:hover {
+            background-color: #e5e7eb;
+        }
+
+        .hero-image {
+            flex: 1;
+            min-width: 300px;
+            text-align: center;
+            z-index: 1;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+            transition: transform 0.4s ease;
+        }
+
+        .hero-image img:hover {
+            transform: scale(1.02);
+        }
+
+        /* --- ADDED CONTENT: STATS SECTION (Inspired by Dashboard KPI Cards) --- */
+        .stats-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 60px;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--card-bg-color);
+            border-radius: var(--radius-lg);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.02);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .stat-growth {
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .growth-positive { color: var(--success-green); }
+        .growth-neutral { color: var(--accent-orange); }
+
+        /* --- ADDED CONTENT: FEATURES SECTION --- */
+        .features-section {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 80px;
+            padding: 0 20px;
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .section-subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            text-align: left;
+        }
+
+        .feature-box {
+            background-color: var(--card-bg-color);
+            padding: 40px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+        }
+
+        .feature-box i {
+            font-size: 2rem;
+            color: var(--primary-purple);
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+
+        .feature-box h3 {
+            font-size: 1.3rem;
+            margin-bottom: 12px;
+        }
+
+        .feature-box p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            background-color: var(--card-bg-color);
+            border-top: 1px solid var(--border-color);
+            padding: 60px 5% 40px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        .footer-social a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 0 12px;
+            font-size: 20px;
+            background: var(--background-color);
+            width: 45px;
+            height: 45px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .footer-social a:hover {
+            color: white;
+            background-color: var(--primary-purple);
+            transform: translateY(-3px);
+        }
+
+        .footer-links {
+            margin-top: 20px;
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin: 0 15px;
+            transition: color 0.3s ease;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary-purple);
+        }
+
+        .footer-copyright {
+            margin-top: 40px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        /* --- MOBILE MENU & RESPONSIVE --- */
+        .hamburger {
+            display: none;
+            cursor: pointer;
+        }
+
+        .bar {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            transition: all 0.3s ease-in-out;
+            background-color: var(--text-main);
+            border-radius: 3px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media screen and (max-width: 992px) {
+            .hero-content h1 { font-size: 2.8em; }
+            .hero-content p { font-size: 1.1em; }
+            .hero { padding: 40px; }
+        }
+
+        @media screen and (max-width: 768px) {
+            nav { padding: 12px 20px; border-radius: 12px; }
+            .hamburger { display: block; }
+            
+            .hamburger.active .bar:nth-child(2) { opacity: 0; }
+            .hamburger.active .bar:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+            .hamburger.active .bar:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
+            .nav-menu {
+                position: fixed;
+                left: -100%;
+                top: 80px;
+                gap: 0;
+                flex-direction: column;
+                background-color: var(--card-bg-color);
+                width: 90%;
+                margin: 0 5%;
+                border-radius: var(--radius-md);
+                text-align: center;
+                transition: 0.3s;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid var(--border-color);
+                padding: 20px 0;
+            }
+
+            .nav-item { margin: 10px 0; }
+            .nav-menu.active { left: 0; }
+
+            .login-btn { margin-left: 0; display: inline-block; margin-top: 10px; }
+
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 40px 20px;
+            }
+            
+            .hero-content {
+                padding-right: 0;
+                margin-bottom: 40px;
+            }
+
+            .cta-group { justify-content: center; flex-direction: column; }
+            .cta-btn, .know-more { width: 100%; justify-content: center; }
+
+            .hero-image { margin-top: 10px; }
+        }
+
+        @media screen and (max-width: 480px) {
+            .hero-content h1 { font-size: 2.2em; }
+            .stat-value { font-size: 2rem; }
+        }
+    </style>
 </head>
 <body>
+
     <header>
         <nav>
             <div class="logo">
-                <img src="./images/svg/logo.svg" alt="QuizGrad Logo" />
+                <img src="./../../images/svg/logo.svg" alt="QuizGrad Logo" />
             </div>
             <div class="hamburger">
                 <span class="bar"></span>
@@ -20,27 +530,97 @@
                 <span class="bar"></span>
             </div>
             <ul class="nav-menu">
-                <li class="nav-item"><a href="#how-it-works" class="nav-link">How it works</a></li>
+                <li class="nav-item"><a href="#how-it-works" class="nav-link active">How it works</a></li>
                 <li class="nav-item"><a href="#features" class="nav-link">Features</a></li>
                 <li class="nav-item"><a href="#about-us" class="nav-link">About us</a></li>
-                <li class="nav-item"><a href="/pages/authentication/signin.html" class="nav-link">Login</a></li>
+                <li class="nav-item"><a href="/pages/authentication/signin.html" class="nav-link login-btn">Login / Sign up</a></li>
             </ul>
         </nav>
     </header>
+
     <main>
-        <div class="hero">
-            <div class="hero-image">
-                <img src="./images/svg/landing_page_image.svg" alt="Quiz creation illustration" />
+        <div class="hero-container">
+            <div class="hero">
+                <div class="hero-content">
+                    <span class="badge"><i class="bi bi-stars"></i> New: AI Quiz Generation</span>
+                    <h1>Sharpen your mind <br>one quiz at a time</h1>
+                    <p>Empower your teaching with our intuitive quiz creation platform. Build, share, and track assessments in minutes.</p>
+                    <div class="cta-group">
+                        <a href="/pages/authentication/signin.html" class="cta-btn">Start creating free</a>
+                        <a href="#how-it-works" class="know-more"><i class="bi bi-play-circle"></i> See how it works</a>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <img src="./images/svg/landing_page_image.svg" alt="Quiz creation illustration" />
+                </div>
             </div>
-            <div class="hero-content">
-                <h1>Sharpe your <br> mind one quiz <br> at a time</h1>
-                <p>Empower your teaching with our intuitive quiz creation platform</p>
-                <a href="/pages/authentication/signin.html" class="cta-btn">Start creating</a>
-                <a href="#know-more" class="know-more">▼ Learn more</a>
+        </div>
+
+        <div class="stats-section">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Active Educators</span>
+                    <div class="stat-icon" style="background: rgba(85, 66, 246, 0.1); color: var(--primary-purple);">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                </div>
+                <div class="stat-value">12,450</div>
+                <div class="stat-growth growth-positive">
+                    <i class="bi bi-arrow-up-right"></i> +24.5% this month
+                </div>
             </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Quizzes Created</span>
+                    <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-orange);">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                </div>
+                <div class="stat-value">845K</div>
+                <div class="stat-growth growth-positive">
+                    <i class="bi bi-arrow-up-right"></i> +12.2% this year
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <span>Global Reach</span>
+                    <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success-green);">
+                        <i class="bi bi-globe"></i>
+                    </div>
+                </div>
+                <div class="stat-value">136</div>
+                <div class="stat-growth growth-neutral">
+                    Countries supported
+                </div>
+            </div>
+        </div>
+
+        <div id="features" class="features-section">
+            <h2 class="section-title">Everything you need to teach better</h2>
+            <p class="section-subtitle">A complete suite of tools designed to make creating and managing assessments effortless.</p>
             
+            <div class="features-grid">
+                <div class="feature-box">
+                    <i class="bi bi-lightning-charge"></i>
+                    <h3>Quick Create</h3>
+                    <p>Use our powerful editor to build complex quizzes in minutes. Support for multiple choice, text matching, and visual questions.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <h3>Advanced CRM & Analytics</h3>
+                    <p>Track student progress in real-time. Identify knowledge gaps with our beautiful, intuitive reporting dashboards.</p>
+                </div>
+                <div class="feature-box">
+                    <i class="bi bi-palette"></i>
+                    <h3>Beautiful Customization</h3>
+                    <p>Make your quizzes look professional. Add your own branding, colors, and imagery to match your school or company.</p>
+                </div>
+            </div>
         </div>
     </main>
+
     <footer>
         <div class="footer-content">
             <div class="footer-social">
@@ -59,9 +639,25 @@
             <a href="#team">Our Team</a>
         </div>
         <div class="footer-copyright">
-            <p>&copy; 2024 Quizify</p>
+            <p>&copy; 2026 Quizify. All rights reserved.</p>
         </div>
     </footer>
-    <script src="js/main.js"></script>
+
+    <script>
+        // Hamburger Menu Toggle
+        const hamburger = document.querySelector(".hamburger");
+        const navMenu = document.querySelector(".nav-menu");
+
+        hamburger.addEventListener("click", () => {
+            hamburger.classList.toggle("active");
+            navMenu.classList.toggle("active");
+        });
+
+        // Close menu when a link is clicked
+        document.querySelectorAll(".nav-link").forEach(n => n.addEventListener("click", () => {
+            hamburger.classList.remove("active");
+            navMenu.classList.remove("active");
+        }));
+    </script>
 </body>
 </html>

@@ -1,118 +1,589 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Dashboard - Quizify</title>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/css/components/dashboard/dashboard.css" />
-  </head>
-  <body>
-    <header>
-      <nav>
-        <div class="logo">
-          <img src="/images/svg/logo.svg" alt="QuizGrad Logo" />
-        </div>
-        <ul class="nav-menu">
-          <li class="nav-item">
-            <a href="#dashboard" class="nav-link">Dashboard</a>
-          </li>
-          <li class="nav-item">
-            <a href="#quizzes" class="nav-link">My Quizzes</a>
-          </li>
-          <li class="nav-item">
-            <a href="#profile" class="nav-link">Profile</a>
-          </li>
-          <li class="nav-item">
-            <a href="#" id="logout-button" class="nav-link">Logout</a>
-          </li>
-        </ul>
-        <div class="hamburger">
-          <span class="bar"></span>
-          <span class="bar"></span>
-          <span class="bar"></span>
-        </div>
-      </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard - Quizify</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    /* --- CSS Variables (Matching the Premium Dashboard UI) --- */
+    :root {
+      --bg-color: #f9fafb;
+      --surface-color: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --primary-purple: #5542F6;
+      --primary-hover: #4836d4;
+      --primary-orange: #f59e0b;
+      --danger-red: #ef4444;
+      --success-green: #10b981;
+      --sidebar-width: 260px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR --- */
+    .sidebar { width: var(--sidebar-width); background-color: var(--surface-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary-purple); margin-bottom: 32px; padding: 0 8px; text-decoration: none; }
+    
+    .btn-quick-create { background-color: var(--primary-purple); color: white; text-decoration: none; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 24px; width: 100%; transition: all 0.2s; }
+    .btn-quick-create:hover { background-color: var(--primary-hover); }
+
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.05em; }
+    .nav-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; transition: all 0.2s; cursor: pointer; }
+    .nav-item i { margin-right: 12px; font-size: 1.1rem; }
+    .nav-item:hover { background-color: #f3f4f6; color: var(--text-main); }
+    .nav-item.active { background-color: var(--primary-orange); color: white; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .top-header { min-height: 70px; background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+    .hamburger { display: none; cursor: pointer; font-size: 1.5rem; color: var(--text-main); }
+    .header-actions { display: flex; align-items: center; gap: 20px; color: var(--text-muted); margin-left: auto; }
+    .header-actions i { font-size: 1.2rem; cursor: pointer; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+
+    .content-wrapper { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+    .dashboard-header { margin-bottom: 32px; }
+    .dashboard-header h1 { font-size: 1.8rem; color: var(--text-main); margin-bottom: 8px; font-weight: 700;}
+    .dashboard-header p { color: var(--text-muted); font-size: 1rem; }
+
+    /* Tabs Content */
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* --- TAB: Dashboard Analytics --- */
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; margin-bottom: 24px; }
+    .stat-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .stat-title { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-bottom: 8px; letter-spacing: 0.05em; }
+    .stat-value { font-size: 2.2rem; color: var(--text-main); font-weight: 800; }
+    
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 24px; margin-bottom: 24px; }
+    .chart-wrapper { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; height: 350px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); position: relative;}
+    .chart-wrapper h3 { font-size: 1.1rem; color: var(--text-main); font-weight: 600; margin-bottom: 16px; }
+
+    /* --- TAB: My Quizzes --- */
+    .card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); font-weight: 600; }
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 12px 16px; color: var(--text-muted); font-weight: 600; font-size: 0.8rem; text-transform: uppercase; border-bottom: 1px solid var(--border-color); background-color: #f9fafb; }
+    td { padding: 16px; border-bottom: 1px solid var(--border-color); color: var(--text-main); font-size: 0.95rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background-color: #f9fafb; }
+
+    .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s;}
+    .status-public { background-color: #d1fae5; color: #065f46; }
+    .status-private { background-color: #f3f4f6; color: #4b5563; }
+    
+    .action-btns { display: flex; gap: 8px; align-items: center;}
+    .btn-icon { background: none; border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px; cursor: pointer; color: var(--text-muted); transition: all 0.2s; font-size: 0.9rem;}
+    .btn-icon:hover { background-color: #f3f4f6; color: var(--text-main); }
+    .btn-icon.delete:hover { background-color: #fef2f2; border-color: #fecaca; color: var(--danger-red); }
+
+    /* --- TAB: Profile --- */
+    .profile-card { background: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 40px 24px; text-align: center; max-width: 600px; margin: 0 auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .profile-avatar-large { width: 120px; height: 120px; background: var(--primary-purple); color: white; border-radius: 50%; font-size: 3rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-weight: 800; text-transform: uppercase; }
+    .profile-card h2 { font-size: 1.8rem; color: var(--text-main); font-weight: 700; margin-bottom: 8px;}
+    .profile-card p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 24px;}
+    .profile-details { text-align: left; background: #f9fafb; padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); }
+    .profile-details p { margin-bottom: 12px; font-size: 1rem; color: var(--text-main); }
+    .profile-details p:last-child { margin-bottom: 0; }
+    .profile-details strong { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; display: inline-block; width: 120px; }
+
+    .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .dashboard-footer { padding: 24px 32px; text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-color); margin-top: auto; }
+
+    /* Toast Notification */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: var(--danger-red); }
+    .toast.success { background: var(--success-green); }
+
+    /* Responsive */
+    @media screen and (max-width: 992px) {
+      .hamburger { display: block; }
+      .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+      .sidebar.active { left: 0; }
+      .top-header { padding: 0 20px; }
+      .content-wrapper { padding: 20px; }
+      .charts-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar" id="sidebar">
+    <a href="#" class="brand"><img src="./../../images/svg/logo.svg" alt="QuizGrad Logo" /></a>
+    <a href="/pages/dashboard/createQuiz/createQuiz.html" class="btn-quick-create"><i class="bi bi-plus-circle"></i> Create New Quiz</a>
+
+    <div class="nav-section">
+      <div class="nav-section-title">Menu</div>
+      <a href="#" class="nav-item active" data-target="dashboard-tab"><div><i class="bi bi-grid"></i> Dashboard Analytics</div></a>
+      <a href="#" class="nav-item" data-target="quizzes-tab"><div><i class="bi bi-journal-check"></i> My Quizzes</div></a>
+      <a href="#" class="nav-item" data-target="profile-tab"><div><i class="bi bi-person"></i> Profile</div></a>
+    </div>
+
+    <div class="nav-section" style="margin-top: auto;">
+      <a href="#" id="logout-button" class="nav-item"><div><i class="bi bi-box-arrow-left"></i> Logout</div></a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-header">
+      <div class="hamburger" id="hamburger"><i class="bi bi-list"></i></div>
+      <div class="header-actions">
+        <i class="bi bi-bell"></i>
+        <div class="avatar" id="header-avatar"><i class="bi bi-person-fill"></i></div>
+      </div>
     </header>
-    <main>
+
+    <div class="content-wrapper">
       <div class="dashboard-header">
-        <h1>Welcome, <span id="teacher-name"></span>!</h1>
-        <p>Manage your quizzes and track student progress</p>
+        <h1>Welcome, <span id="teacher-name-header">Educator</span>!</h1>
+        <p>Manage your quizzes and track student progress from your command center.</p>
       </div>
-      <div class="dashboard-content">
-        <div class="teacher-info">
-          <h2>Teacher Information</h2>
-          <p><strong>Name:</strong> <span id="teacher-full-name"></span></p>
-          <p><strong>Email:</strong> <span id="teacher-email"></span></p>
-          <a href="/pages/dashboard/createQuiz/createQuiz.html" class="btn">Create New Quiz</a>
-        </div>
-        <div class="quiz-list">
-          <h2>Your Quizzes</h2>
-          <div id="quiz-table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>Quiz Name</th>
-                  <th>Date Created</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="quiz-list-body">
-                <!-- Quiz items will be dynamically inserted here -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </main>
-    <footer>
-      <div class="footer-content">
-        <div class="footer-social">
-          <a href="#facebook"><i class="bi bi-facebook"></i></a>
-          <a href="#instagram"><i class="bi bi-instagram"></i></a>
-          <a href="#twitter"><i class="bi bi-twitter"></i></a>
-          <a href="#github"><i class="bi bi-github"></i></a>
-          <a href="#youtube"><i class="bi bi-youtube"></i></a>
-        </div>
-      </div>
-      <div class="footer-links">
-        <a href="#home">Home</a>
-        <a href="#news">News</a>
-        <a href="#about">About</a>
-        <a href="#contact">Contact Us</a>
-        <a href="#team">Our Team</a>
-      </div>
-      <div class="footer-copyright">
-        <p>&copy; 2024 Quizify</p>
-      </div>
-    </footer>
-    <script src="/js/apis/dashboard/dashboard.js"></script>
-    <script>
-      const hamburger = document.querySelector(".hamburger");
-      const navMenu = document.querySelector(".nav-menu");
 
-      hamburger.addEventListener("click", mobileMenu);
+      <div id="dashboard-tab" class="tab-content active">
+        
+        <div class="analytics-grid">
+            <div class="stat-card">
+                <div class="stat-title">Total Quizzes</div>
+                <div class="stat-value" id="stat-total-quizzes">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Submissions</div>
+                <div class="stat-value" id="stat-total-submissions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Platform Avg Score</div>
+                <div class="stat-value" id="stat-avg-score">0%</div>
+            </div>
+        </div>
 
-      function mobileMenu() {
-        hamburger.classList.toggle("active");
-        navMenu.classList.toggle("active");
+        <div class="charts-grid">
+            <div class="chart-wrapper">
+                <h3>Overall Score Distribution</h3>
+                <div style="position: relative; height: 280px; width: 100%;">
+                    <canvas id="scoreDistributionChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-wrapper">
+                <h3>Submission Timeline</h3>
+                <div style="position: relative; height: 280px; width: 100%;">
+                    <canvas id="submissionTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="bi bi-trophy"></i> Top Performing Students</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Email Address</th>
+                    <th>Quizzes Taken</th>
+                    <th>Avg Score</th>
+                  </tr>
+                </thead>
+                <tbody id="top-students-body">
+                  <tr><td colspan="4" class="loading-state">Gathering analytics...</td></tr>
+                </tbody>
+              </table>
+            </div>
+        </div>
+
+      </div>
+
+      <div id="quizzes-tab" class="tab-content">
+        <div class="card quiz-list">
+            <h2><i class="bi bi-collection"></i> Manage Your Quizzes</h2>
+            <div class="table-container" id="quiz-table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Quiz Name</th>
+                    <th>Date Created</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="quiz-list-body">
+                  <tr><td colspan="4" class="loading-state">Loading your quizzes...</td></tr>
+                </tbody>
+              </table>
+            </div>
+        </div>
+      </div>
+
+      <div id="profile-tab" class="tab-content">
+        <div class="profile-card">
+            <div class="profile-avatar-large" id="profile-avatar-large">T</div>
+            <h2 id="profile-name">Teacher Name</h2>
+            <p id="profile-role">Educator</p>
+            
+            <div class="profile-details">
+                <p><strong>Full Name:</strong> <span id="profile-detail-name">...</span></p>
+                <p><strong>Email:</strong> <span id="profile-detail-email">...</span></p>
+                <p><strong>Account ID:</strong> <span id="profile-detail-id">...</span></p>
+            </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="dashboard-footer">&copy; 2026 Quizify. All rights reserved.</footer>
+  </main>
+
+  <div id="toast" class="toast">Message goes here</div>
+
+  <script>
+    // Configuration
+    const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
+    const FRONTEND_BASE_URL = window.location.origin; 
+    
+    // Auth Check
+    const token = localStorage.getItem("token");
+    const userId = localStorage.getItem("userId");
+
+    if (!token || !userId) {
+      window.location.href = "/login";
+    }
+
+    // Chart instances for destroying on re-render
+    let scoreChartInstance = null;
+    let trendChartInstance = null;
+
+    // UI Elements
+    const elements = {
+      toast: document.getElementById("toast"),
+      quizListBody: document.getElementById("quiz-list-body"),
+      topStudentsBody: document.getElementById("top-students-body")
+    };
+
+    // --- Tab Switching Logic ---
+    const navItems = document.querySelectorAll('.nav-item[data-target]');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            // Remove active from all navs & tabs
+            navItems.forEach(nav => nav.classList.remove('active'));
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Add active to clicked nav & corresponding tab
+            item.classList.add('active');
+            const targetId = item.getAttribute('data-target');
+            document.getElementById(targetId).classList.add('active');
+            
+            // Close mobile menu if open
+            if(window.innerWidth <= 992) {
+                document.getElementById('sidebar').classList.remove('active');
+            }
+        });
+    });
+
+    // --- Utility Functions ---
+    function showToast(message, type = 'success') {
+      elements.toast.textContent = message;
+      elements.toast.className = `toast show ${type}`;
+      setTimeout(() => { elements.toast.classList.remove('show'); }, 3000);
+    }
+
+    // --- Core Logic ---
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/dashboard`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          populateProfileData(data.user);
+          populateQuizzes(data.quizzes);
+          processAnalytics(data.quizzes, data.submissions);
+        } else {
+          throw new Error(data.error || "Failed to load dashboard data");
+        }
+      } catch (error) {
+        console.error("Dashboard Error:", error);
+        elements.quizListBody.innerHTML = `<tr><td colspan="4" class="loading-state" style="color:var(--danger-red);">Error loading data. Please refresh.</td></tr>`;
+        
+        if (error.message.includes("token") || error.message.includes("denied")) {
+          localStorage.clear();
+          window.location.href = "/login";
+        }
+      }
+    }
+
+    // --- Profile & Header ---
+    function populateProfileData(userData) {
+      document.getElementById("teacher-name-header").textContent = userData.name;
+      
+      // Profile Tab
+      document.getElementById("profile-name").textContent = userData.name;
+      document.getElementById("profile-role").textContent = userData.role || "Educator";
+      document.getElementById("profile-detail-name").textContent = userData.name;
+      document.getElementById("profile-detail-email").textContent = userData.email;
+      document.getElementById("profile-detail-id").textContent = userId;
+
+      // Initials for avatar
+      const initial = userData.name ? userData.name.charAt(0).toUpperCase() : "E";
+      document.getElementById("header-avatar").textContent = initial;
+      document.getElementById("profile-avatar-large").textContent = initial;
+    }
+
+    // --- Manage Quizzes Tab ---
+    function populateQuizzes(quizzes) {
+      elements.quizListBody.innerHTML = "";
+
+      if (!quizzes || quizzes.length === 0) {
+        elements.quizListBody.innerHTML = `<tr><td colspan="4" class="loading-state">You haven't created any quizzes yet.</td></tr>`;
+        return;
       }
 
-      const navLink = document.querySelectorAll(".nav-link");
+      quizzes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      navLink.forEach((n) => n.addEventListener("click", closeMenu));
+      quizzes.forEach((quiz) => {
+        const dateCreated = new Date(quiz.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+        const statusClass = quiz.isPublic ? 'status-public' : 'status-private';
+        const statusText = quiz.isPublic ? 'Public' : 'Private';
 
-      function closeMenu() {
-        hamburger.classList.remove("active");
-        navMenu.classList.remove("active");
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td><strong>${quiz.title}</strong></td>
+          <td>${dateCreated}</td>
+          <td>
+             <button class="status-badge ${statusClass}" onclick="toggleQuizVisibility('${quiz.id}', this)">
+                ${statusText}
+             </button>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="btn-icon" title="Copy Share Link" onclick="shareQuiz('${quiz.id}')"><i class="bi bi-link-45deg"></i></button>
+              <button class="btn-icon" title="View Submissions" onclick="viewSubmissions('${quiz.id}')"><i class="bi bi-bar-chart-fill"></i></button>
+              <button class="btn-icon delete" title="Delete Quiz" onclick="deleteQuiz('${quiz.id}')"><i class="bi bi-trash"></i></button>
+            </div>
+          </td>
+        `;
+        elements.quizListBody.appendChild(row);
+      });
+    }
+
+    // --- Analytics Tab Logic ---
+    function processAnalytics(quizzes, submissions) {
+        // 1. High Level Stats
+        document.getElementById('stat-total-quizzes').textContent = quizzes.length;
+        document.getElementById('stat-total-submissions').textContent = submissions.length;
+        
+        let avgScore = 0;
+        if (submissions.length > 0) {
+            const sum = submissions.reduce((acc, sub) => acc + sub.score.percentage, 0);
+            avgScore = sum / submissions.length;
+        }
+        document.getElementById('stat-avg-score').textContent = avgScore.toFixed(1) + "%";
+
+        if(submissions.length === 0) {
+            elements.topStudentsBody.innerHTML = `<tr><td colspan="4" class="loading-state">No submissions yet to show analytics.</td></tr>`;
+            return;
+        }
+
+        // 2. Charts
+        renderCharts(submissions);
+
+        // 3. Top Students
+        renderTopStudents(submissions);
+    }
+
+    function renderCharts(submissions) {
+        // Prepare Distribution Data
+        let failed = 0, passed = 0, excellent = 0;
+        submissions.forEach(s => {
+            if(s.score.percentage < 60) failed++;
+            else if(s.score.percentage < 80) passed++;
+            else excellent++;
+        });
+
+        if(scoreChartInstance) scoreChartInstance.destroy();
+        scoreChartInstance = new Chart(document.getElementById('scoreDistributionChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Failed (<60%)', 'Passed (60-79%)', 'Excellent (≥80%)'],
+                datasets: [{
+                    data: [failed, passed, excellent],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        // Prepare Timeline Data
+        const timeData = {};
+        submissions.forEach(s => {
+            const date = new Date(s.submittedAt).toLocaleDateString();
+            timeData[date] = (timeData[date] || 0) + 1;
+        });
+        
+        const labels = Object.keys(timeData).sort((a,b) => new Date(a) - new Date(b));
+        const data = labels.map(l => timeData[l]);
+
+        if(trendChartInstance) trendChartInstance.destroy();
+        trendChartInstance = new Chart(document.getElementById('submissionTrendChart'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Submissions per day',
+                    data: data,
+                    borderColor: '#5542F6',
+                    backgroundColor: 'rgba(85, 66, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+            }
+        });
+    }
+
+    function renderTopStudents(submissions) {
+        // Group by email
+        const studentMap = {};
+        submissions.forEach(sub => {
+            const email = sub.userDetails.email;
+            if(!studentMap[email]) {
+                studentMap[email] = {
+                    name: sub.userDetails.name || 'Unknown',
+                    email: email,
+                    totalScore: 0,
+                    count: 0
+                };
+            }
+            studentMap[email].totalScore += sub.score.percentage;
+            studentMap[email].count += 1;
+        });
+
+        // Convert to array and calculate average
+        const studentArr = Object.values(studentMap).map(s => {
+            s.avgScore = s.totalScore / s.count;
+            return s;
+        });
+
+        // Sort descending by avg score
+        studentArr.sort((a, b) => b.avgScore - a.avgScore);
+
+        // Take Top 5
+        const topStudents = studentArr.slice(0, 5);
+
+        elements.topStudentsBody.innerHTML = '';
+        topStudents.forEach(student => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${student.name}</strong></td>
+                <td style="color:var(--text-muted);">${student.email}</td>
+                <td>${student.count}</td>
+                <td><strong style="color:var(--success-green);">${student.avgScore.toFixed(1)}%</strong></td>
+            `;
+            elements.topStudentsBody.appendChild(tr);
+        });
+    }
+
+    // --- Action Handlers ---
+    async function toggleQuizVisibility(quizId, buttonEl) {
+      try {
+        const response = await fetch(`${API_BASE_URL}/toggle-quiz-public`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ quizId })
+        });
+
+        if (!response.ok) throw new Error("Failed to toggle visibility");
+        const data = await response.json();
+        
+        if (data.isPublic) {
+            buttonEl.className = "status-badge status-public";
+            buttonEl.textContent = "Public";
+        } else {
+            buttonEl.className = "status-badge status-private";
+            buttonEl.textContent = "Private";
+        }
+        showToast(`Quiz is now ${data.isPublic ? 'Public' : 'Private'}`);
+      } catch (error) {
+        showToast("Error updating visibility", "error");
+        console.error(error);
       }
-    </script>
-  </body>
+    }
+
+    function shareQuiz(quizId) {
+      const shareLink = `${FRONTEND_BASE_URL}/pages/attempt/attempt.html?id=${quizId}`;
+      navigator.clipboard.writeText(shareLink).then(() => {
+        showToast("Share link copied to clipboard!");
+      }).catch(err => {
+        showToast("Failed to copy link", "error");
+      });
+    }
+
+    function viewSubmissions(quizId) {
+      window.location.href = `/pages/dashboard/submissions/submissions.html?quizId=${quizId}`;
+    }
+
+    async function deleteQuiz(quizId) {
+      if (!confirm("Are you sure you want to delete this quiz? This action cannot be undone.")) return;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/quizzes/${quizId}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        if (!response.ok) throw new Error("Failed to delete quiz");
+
+        showToast("Quiz deleted successfully");
+        fetchDashboardData(); 
+      } catch (error) {
+        showToast("Error deleting quiz", "error");
+        console.error(error);
+      }
+    }
+
+    // --- System Actions ---
+    document.getElementById("logout-button").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("userId");
+      window.location.href = "/login"; 
+    });
+
+    document.getElementById("hamburger").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("active");
+    });
+
+    // Initialize Dashboard
+    fetchDashboardData();
+  </script>
+</body>
 </html>

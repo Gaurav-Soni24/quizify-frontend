@@ -3,59 +3,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizGrad - Login</title>
-    <link rel="stylesheet" href="/css/components/authentication/signin.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Quizify - Login</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #F8F9FA;
+            --card-bg-color: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --input-bg: #f9fafb;
+            --primary-purple: #5542F6;
+            --primary-hover: #4836d4;
+            --radius-lg: 24px;
+            --radius-md: 12px;
+            --danger-bg: #fef2f2;
+            --danger-text: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 10% 20%, rgba(85, 66, 246, 0.05) 0%, transparent 40%), 
+                              radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.05) 0%, transparent 40%);
+            font-family: "Inter", sans-serif; color: var(--text-main);
+        }
+
+        .login-container {
+            display: flex; width: 90%; max-width: 1000px; background-color: var(--card-bg-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color); overflow: hidden;
+        }
+
+        .login-form-wrapper { flex: 1; padding: 60px 48px; display: flex; flex-direction: column; justify-content: center; }
+        .login-form-wrapper h2 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .login-form-wrapper p.subtitle { color: var(--text-muted); margin-bottom: 32px; font-size: 1rem; }
+
+        .error-message {
+            background-color: var(--danger-bg); color: var(--danger-text); padding: 12px 16px;
+            border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 24px;
+            border: 1px solid #fecaca; display: flex; align-items: center; gap: 8px;
+        }
+
+        .input-group { margin-bottom: 24px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        /* FIXED: Targeting inputs securely so they don't lose styles 
+           when JavaScript changes type="password" to type="text"
+        */
+        .input-group input:not([type="checkbox"]) {
+            width: 100%; padding: 14px 16px; background-color: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            font-size: 0.95rem; color: var(--text-main); transition: all 0.2s ease;
+        }
+
+        .input-group input:not([type="checkbox"]):focus { 
+            background-color: var(--card-bg-color); border-color: var(--primary-purple); 
+            outline: none; box-shadow: 0 0 0 4px rgba(85, 66, 246, 0.1); 
+        }
+
+        /* Target the password field by ID to ensure it always keeps padding for the eye icon */
+        #password { padding-right: 44px !important; }
+
+        .input-group input::placeholder { color: #9ca3af; }
+
+        .password-toggle { position: absolute; right: 16px; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
+        .password-toggle:hover { color: var(--primary-purple); }
+
+        .options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; font-size: 0.9rem; }
+        .remember-me { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted); font-weight: 500; }
+        .options a { color: var(--primary-purple); text-decoration: none; font-weight: 600; }
+
+        .btn-submit {
+            width: 100%; padding: 14px; background-color: var(--primary-purple); color: white;
+            border: none; border-radius: var(--radius-md); font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; position: relative;
+        }
+        .btn-submit:hover:not(.loading) { background-color: var(--primary-hover); transform: translateY(-1px); }
+        
+        .btn-submit.loading { color: transparent !important; pointer-events: none; }
+        .btn-submit.loading::after {
+            content: ""; position: absolute; width: 20px; height: 20px;
+            top: 50%; left: 50%; transform: translate(-50%, -50%);
+            border: 2px solid #fff; border-radius: 50%; border-top-color: transparent;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        .signup-prompt { text-align: center; margin-top: 32px; font-size: 0.95rem; color: var(--text-muted); }
+        .signup-prompt a { color: var(--primary-purple); font-weight: 700; text-decoration: none; }
+
+        .login-image { flex: 1; background: linear-gradient(135deg, rgba(85,66,246,0.05), rgba(245,158,11,0.05)), url("/images/svg/landing_page_image.svg") no-repeat center center; background-size: 70%; background-color: #f9fafb; border-left: 1px solid var(--border-color); }
+
+        @media (max-width: 900px) {
+            .login-container { flex-direction: column; max-width: 500px; }
+            .login-image { display: none; }
+            .login-form-wrapper { padding: 40px 32px; }
+        }
+    </style>
 </head>
 <body>
+
     <div class="login-container">
-        <div class="login-form">
-            <h2>Welcome back!</h2>
-            <p>Please login to your account or sign up.</p>
+        <div class="login-form-wrapper">
+            <h2>Welcome back</h2>
+            <p class="subtitle">Please enter your details to sign in.</p>
+            
             <div id="error-message" class="error-message" style="display: none;"></div>
+            
             <form id="login-form">
                 <div class="input-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                    <input type="email" id="email" name="email" required placeholder="name@company.com">
                 </div>
+                
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
-                    <i class="bi bi-eye password-toggle" id="togglePassword"></i>
-                </div>
-                <div class="options">
-                    <div class="remember-me">
-                        <input type="checkbox" id="remember" name="remember">
-                        <label for="remember">Remember Me</label>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" required placeholder="••••••••">
+                        <i class="bi bi-eye password-toggle" id="togglePassword"></i>
                     </div>
-                    <a href="#">Forgot Password?</a>
                 </div>
-                <button type="submit" class="btn">Login</button>
+                
+                <div class="options">
+                    <label class="remember-me" for="remember">
+                        <input type="checkbox" id="remember" name="remember">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#">Forgot password?</a>
+                </div>
+                
+                <button type="submit" class="btn-submit" id="submitBtn">Sign in to account</button>
             </form>
-            <div class="social-login">
-                <p>Or login with</p>
-                <div class="social-icons">
-                    <a href="#"><i class="bi bi-facebook"></i></a>
-                    <a href="#"><i class="bi bi-google"></i></a>
-                    <a href="#"><i class="bi bi-twitter"></i></a>
-                </div>
-            </div>
-            <p style="text-align: center; margin-top: 20px; font-size: 14px;">
-                Don't have an account? <a href="signup.html " style="color: var(--primary-color); font-weight: 600;">Sign up</a>
+            
+            <p class="signup-prompt">
+                Don't have an account? <a href="signup.html">Sign up</a>
             </p>
         </div>
+
         <div class="login-image"></div>
     </div>
+
     <script>
         const togglePassword = document.querySelector('#togglePassword');
         const password = document.querySelector('#password');
 
-        togglePassword.addEventListener('click', function (e) {
+        togglePassword.addEventListener('click', function () {
             const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
             password.setAttribute('type', type);
             this.classList.toggle('bi-eye');
             this.classList.toggle('bi-eye-slash');
+        });
+
+        const loginForm = document.getElementById('login-form');
+        const submitBtn = document.getElementById('submitBtn');
+
+        loginForm.addEventListener('submit', function(e) {
+            submitBtn.classList.add('loading');
         });
     </script>
     <script src="/js/apis/authentication/signin.js"></script>

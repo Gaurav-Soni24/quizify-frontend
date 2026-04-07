@@ -4,61 +4,237 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quizify - Teacher Registration</title>
-    <link rel="stylesheet" href="/css/components/authentication/signup.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #F8F9FA;
+            --card-bg-color: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+            --input-bg: #f9fafb;
+            --primary-purple: #5542F6;
+            --primary-hover: #4836d4;
+            --success-green: #10B981;
+            --radius-lg: 24px;
+            --radius-md: 12px;
+            --danger-bg: #fef2f2;
+            --danger-text: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+            background-color: var(--bg-color); padding: 40px 0;
+            background-image: radial-gradient(circle at 10% 20%, rgba(85, 66, 246, 0.05) 0%, transparent 40%);
+            font-family: "Inter", sans-serif; color: var(--text-main);
+        }
+
+        .register-container {
+            display: flex; width: 90%; max-width: 1000px; background-color: var(--card-bg-color);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.04); border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color); overflow: hidden;
+        }
+
+        .register-form { flex: 1; padding: 60px 48px; }
+        .register-form h2 { font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .register-form p.subtitle { color: var(--text-muted); margin-bottom: 32px; font-size: 1rem; }
+
+        .error-message {
+            background-color: var(--danger-bg); color: var(--danger-text); padding: 12px 16px;
+            border-radius: 8px; font-size: 0.9rem; font-weight: 500; margin-bottom: 24px;
+            border: 1px solid #fecaca; display: none; align-items: center; gap: 8px;
+        }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; }
+
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        
+        input[type="text"], input[type="email"], input[type="password"] {
+            width: 100%; padding: 14px 16px; background-color: var(--input-bg);
+            border: 1px solid var(--border-color); border-radius: var(--radius-md);
+            font-size: 0.95rem; color: var(--text-main); transition: all 0.2s ease;
+        }
+        input[type="password"] { padding-right: 44px; }
+        input:focus { background-color: var(--card-bg-color); border-color: var(--primary-purple); outline: none; box-shadow: 0 0 0 4px rgba(85, 66, 246, 0.1); }
+
+        .password-toggle { position: absolute; right: 16px; cursor: pointer; color: var(--text-muted); font-size: 1.1rem; }
+        
+        /* Password Validation UI */
+        .password-requirements { margin-top: 10px; font-size: 0.8rem; color: var(--text-muted); display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .req-item { display: flex; align-items: center; gap: 6px; transition: color 0.3s ease; }
+        .req-item i { font-size: 0.9rem; }
+        .req-item.valid { color: var(--success-green); }
+        .req-item.valid i::before { content: "\F26E"; /* Bootstrap check-circle-fill */ }
+        .req-item.invalid i::before { content: "\F633"; /* Bootstrap x-circle */ }
+
+        .btn-submit {
+            width: 100%; padding: 14px; background-color: var(--primary-purple); color: white;
+            border: none; border-radius: var(--radius-md); font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: all 0.2s ease; margin-top: 10px; position: relative;
+        }
+        .btn-submit:hover:not(.loading) { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .btn-submit:disabled { background-color: #a5a5a5; cursor: not-allowed; transform: none; }
+        
+        .btn-submit.loading { color: transparent !important; pointer-events: none; }
+        .btn-submit.loading::after {
+            content: ""; position: absolute; width: 20px; height: 20px; top: 50%; left: 50%;
+            transform: translate(-50%, -50%); border: 2px solid #fff; border-radius: 50%;
+            border-top-color: transparent; animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
+
+        .signin-prompt { text-align: center; margin-top: 24px; font-size: 0.95rem; color: var(--text-muted); }
+        .signin-prompt a { color: var(--primary-purple); font-weight: 700; text-decoration: none; }
+
+        .register-image { flex: 1; background: linear-gradient(135deg, rgba(85,66,246,0.05), rgba(245,158,11,0.05)), url("/images/svg/landing_page_image.svg") no-repeat center center; background-size: 70%; background-color: #f9fafb; border-left: 1px solid var(--border-color); }
+
+        @media (max-width: 900px) {
+            .register-container { flex-direction: column; max-width: 500px; }
+            .register-image { display: none; }
+            .register-form { padding: 40px 32px; }
+        }
+    </style>
 </head>
 <body>
     <div class="register-container">
         <div class="register-form">
-            <h2>Create a Teacher Account</h2>
-            <p>Join QuizGrad as a teacher and start creating quizzes!</p>
-            <form method="post">
+            <h2>Create an Account</h2>
+            <p class="subtitle">Join Quizify as an educator today.</p>
+            
+            <div id="error-message" class="error-message"><i class="bi bi-exclamation-circle"></i> <span id="error-text"></span></div>
+            
+            <form id="signup-form" method="post">
                 <div class="input-group">
                     <label for="name">Full Name</label>
-                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
                 </div>
+                
                 <div class="input-group">
                     <label for="email">Email Address</label>
-                    <input type="email" id="email" name="email" required placeholder="Enter your email">
+                    <input type="email" id="email" name="email" required placeholder="name@company.com">
                 </div>
+                
                 <div class="input-group">
                     <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required placeholder="Enter your password">
-                    <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+                    <div class="input-wrapper">
+                        <input type="password" id="password" name="password" required placeholder="••••••••">
+                        <i class="bi bi-eye password-toggle" id="togglePassword"></i>
+                    </div>
+                    <div class="password-requirements">
+                        <div class="req-item invalid" id="req-length"><i class="bi"></i> At least 8 characters</div>
+                        <div class="req-item invalid" id="req-upper"><i class="bi"></i> 1 uppercase letter</div>
+                        <div class="req-item invalid" id="req-lower"><i class="bi"></i> 1 lowercase letter</div>
+                        <div class="req-item invalid" id="req-number"><i class="bi"></i> 1 number</div>
+                    </div>
                 </div>
+                
                 <div class="input-group">
                     <label for="confirm_password">Confirm Password</label>
-                    <input type="password" id="confirm_password" name="confirm_password" required placeholder="Confirm your password">
-                    <i class="bi bi-eye password-toggle" id="toggleConfirmPassword"></i>
+                    <div class="input-wrapper">
+                        <input type="password" id="confirm_password" name="confirm_password" required placeholder="••••••••">
+                        <i class="bi bi-eye password-toggle" id="toggleConfirmPassword"></i>
+                    </div>
                 </div>
+                
                 <input type="hidden" name="role" value="teacher">
-                <button type="submit" class="btn">Sign Up as Teacher</button>
+                <button type="submit" class="btn-submit" id="submitBtn" disabled>Sign Up as Teacher</button>
             </form>
-            <p style="text-align: center; margin-top: 20px; font-size: 14px;">
-                Already have an account? <a href="signin.html" style="color: #4a90e2; font-weight: 600;">Login</a>
+            
+            <p class="signin-prompt">
+                Already have an account? <a href="signin.html">Sign In</a>
             </p>
         </div>
         <div class="register-image"></div>
     </div>
+
     <script>
+        // Password toggles
         const togglePassword = document.querySelector('#togglePassword');
-        const password = document.querySelector('#password');
+        const passwordInput = document.querySelector('#password');
         const toggleConfirmPassword = document.querySelector('#toggleConfirmPassword');
-        const confirmPassword = document.querySelector('#confirm_password');
+        const confirmPasswordInput = document.querySelector('#confirm_password');
+        const submitBtn = document.getElementById('submitBtn');
+        const signupForm = document.getElementById('signup-form');
+        const errorMsg = document.getElementById('error-message');
+        const errorText = document.getElementById('error-text');
 
-        togglePassword.addEventListener('click', function (e) {
-            const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
-            password.setAttribute('type', type);
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
-        });
+        function toggleVisibility(toggleIcon, inputElement) {
+            const type = inputElement.getAttribute('type') === 'password' ? 'text' : 'password';
+            inputElement.setAttribute('type', type);
+            toggleIcon.classList.toggle('bi-eye');
+            toggleIcon.classList.toggle('bi-eye-slash');
+        }
 
-        toggleConfirmPassword.addEventListener('click', function (e) {
-            const type = confirmPassword.getAttribute('type') === 'password' ? 'text' : 'password';
-            confirmPassword.setAttribute('type', type);
-            this.classList.toggle('bi-eye');
-            this.classList.toggle('bi-eye-slash');
+        togglePassword.addEventListener('click', () => toggleVisibility(togglePassword, passwordInput));
+        toggleConfirmPassword.addEventListener('click', () => toggleVisibility(toggleConfirmPassword, confirmPasswordInput));
+
+        // Frontend Password Validation Logic
+        const reqLength = document.getElementById('req-length');
+        const reqUpper = document.getElementById('req-upper');
+        const reqLower = document.getElementById('req-lower');
+        const reqNumber = document.getElementById('req-number');
+
+        let isPasswordStrong = false;
+
+        function updateRequirement(element, isValid) {
+            if (isValid) {
+                element.classList.remove('invalid');
+                element.classList.add('valid');
+            } else {
+                element.classList.remove('valid');
+                element.classList.add('invalid');
+            }
+        }
+
+        function validatePassword() {
+            const val = passwordInput.value;
+            
+            const hasLength = val.length >= 8;
+            const hasUpper = /[A-Z]/.test(val);
+            const hasLower = /[a-z]/.test(val);
+            const hasNumber = /[0-9]/.test(val);
+
+            updateRequirement(reqLength, hasLength);
+            updateRequirement(reqUpper, hasUpper);
+            updateRequirement(reqLower, hasLower);
+            updateRequirement(reqNumber, hasNumber);
+
+            isPasswordStrong = hasLength && hasUpper && hasLower && hasNumber;
+            checkFormValidity();
+        }
+
+        function checkFormValidity() {
+            // Enable button only if password is strong and passwords match
+            const passwordsMatch = passwordInput.value === confirmPasswordInput.value && passwordInput.value !== "";
+            if (isPasswordStrong && passwordsMatch) {
+                submitBtn.disabled = false;
+                errorMsg.style.display = 'none';
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        passwordInput.addEventListener('input', validatePassword);
+        confirmPasswordInput.addEventListener('input', checkFormValidity);
+
+        // Submit & Loader Logic
+        signupForm.addEventListener('submit', function(e) {
+            if (passwordInput.value !== confirmPasswordInput.value) {
+                e.preventDefault();
+                errorText.innerText = "Passwords do not match!";
+                errorMsg.style.display = 'flex';
+                return;
+            }
+            
+            // Show loader
+            submitBtn.classList.add('loading');
+            
+            // Form continues to your /js/apis/authentication/signup.js script...
         });
     </script>
     <script src="/js/apis/authentication/signup.js"></script>

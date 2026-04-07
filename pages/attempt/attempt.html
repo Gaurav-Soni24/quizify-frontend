@@ -1,78 +1,850 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Attempt Quiz</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Radio+Canada+Big:ital,wght@0,400..700;1,400..700&family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../../css/components/attempt/attempt.css" />
-    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Section 1: Details Form (initially visible) -->
-      <div id="section-1">
-        <div class="section-header">
-          <h1>Quiz Title</h1>
-          <p>Quiz Description</p>
-        </div>
-        <div>
-          <h2>Required details</h2>
-          <form id="details-form">
-            <!-- Form fields will be dynamically added here -->
-          </form>
-        </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Attempt Quiz - Quizify Secure</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+  
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+
+  <style>
+    /* --- CSS Variables --- */
+    :root {
+      --bg-color: #f3f4f6;
+      --surface-color: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --primary-purple: #5542F6;
+      --primary-hover: #4836d4;
+      --warning-yellow: #f59e0b;
+      --danger-red: #ef4444;
+      --success-green: #10b981;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    
+    /* NEW: Prevent Text Selection Globally */
+    body { 
+        background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; 
+        display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
+        -webkit-user-select: none; /* Safari */
+        -ms-user-select: none; /* IE 10 and IE 11 */
+        user-select: none; /* Standard syntax */
+    }
+
+    /* Allow selection only inside specific inputs if needed (though we disabled copy/paste) */
+    input[type="text"], input[type="number"], textarea {
+        -webkit-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+
+    /* --- Container & Cards --- */
+    .container { width: 100%; max-width: 1000px; margin: auto; }
+    .card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); margin-bottom: 24px; animation: fadeIn 0.4s ease-out;}
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    h1, h2, h3 { color: var(--text-main); font-weight: 700; }
+    .section-header { text-align: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
+    .section-header h1 { font-size: 2rem; color: var(--primary-purple); margin-bottom: 8px;}
+    .section-header p { color: var(--text-muted); font-size: 1.1rem; }
+
+    /* --- Forms --- */
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
+    input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="tel"], select, textarea { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
+
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary { background-color: var(--primary-purple); color: white; }
+    .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
+    .btn-primary:disabled { background-color: #a78bfa; cursor: not-allowed; }
+    .btn-success { background-color: var(--success-green); color: white; }
+    .btn-success:hover { background-color: #059669; }
+
+    /* --- Instructions --- */
+    .instructions-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+    .instructions-box ul { list-style-type: none; }
+    .instructions-box li { position: relative; padding-left: 24px; margin-bottom: 12px; color: #1e3a8a; font-weight: 500;}
+    .instructions-box li::before { content: "•"; position: absolute; left: 8px; color: #3b82f6; font-size: 1.5rem; top: -4px; }
+    
+    .anti-cheat-warning { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #991b1b; }
+    .anti-cheat-warning h4 { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
+
+    .agreement { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;}
+    .agreement input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary-purple); }
+
+    /* --- Quiz Layout --- */
+    .quiz-layout { display: flex; gap: 24px; align-items: flex-start; }
+    
+    .question-palette { width: 280px; background: var(--surface-color); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); position: sticky; top: 20px;}
+    .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-top: 16px; margin-bottom: 24px;}
+    .palette-btn { width: 100%; aspect-ratio: 1; border: 2px solid var(--border-color); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+    .palette-btn:hover { border-color: var(--primary-purple); }
+    .palette-btn.active { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.2); }
+    .palette-btn.answered { background: var(--success-green); color: white; border-color: var(--success-green); }
+    .palette-btn.marked { background: var(--warning-yellow); color: white; border-color: var(--warning-yellow); }
+    
+    .legend { font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;}
+    .legend-item { display: flex; align-items: center; gap: 8px; }
+    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
+
+    .question-area { flex: 1; }
+    .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
+    .question-card.active { display: block; animation: fadeIn 0.3s ease; }
+    .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
+    .q-number { font-size: 1.2rem; font-weight: 700; color: var(--primary-purple); }
+    .q-marks { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); background: #f3f4f6; padding: 4px 10px; border-radius: 12px;}
+    .q-text { font-size: 1.15rem; color: var(--text-main); margin-bottom: 24px; font-weight: 500; line-height: 1.6;}
+
+    .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px;}
+    .option-label { display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: #f9fafb;}
+    .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
+    .option-label input { width: 18px; height: 18px; accent-color: var(--primary-purple); }
+    
+    .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
+    .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+    .btn-nav:hover:not(:disabled) { background: #e5e7eb; }
+    .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-mark { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+    .btn-mark:hover { background: #fef3c7; }
+
+    /* --- Widgets (Timer & Webcam) --- */
+    .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000; transition: all 0.3s;}
+    .timer-widget.warning { border-color: var(--danger-red); color: var(--danger-red); animation: pulse 1s infinite; }
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+
+    /* NEW: Webcam PIP Feed */
+    .webcam-container {
+        position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px;
+        background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; transition: border-color 0.3s;
+    }
+    .webcam-container.warning { border-color: var(--danger-red); }
+    #webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .webcam-overlay { position: absolute; bottom: 4px; left: 0; width: 100%; text-align: center; color: white; font-size: 0.75rem; font-weight: 600; text-shadow: 1px 1px 2px black;}
+
+    /* --- Warning Modal --- */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;}
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s;}
+    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-content i { font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;}
+    .modal-content h3 { font-size: 1.5rem; margin-bottom: 12px; }
+    .modal-content p { color: var(--text-muted); margin-bottom: 24px; }
+
+    /* --- Results Section --- */
+    .results-capture { background: white; padding: 40px; border-radius: 12px; text-align: center; }
+    .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #f5f3ff; border: 8px solid var(--primary-purple); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; }
+    .score-circle .percentage { font-size: 2rem; font-weight: 800; color: var(--primary-purple); }
+    .score-circle .fraction { font-size: 1rem; color: var(--text-muted); font-weight: 600;}
+    .status-pass { color: var(--success-green); font-size: 1.5rem; font-weight: 700; margin-bottom: 32px;}
+    .status-fail { color: var(--danger-red); font-size: 1.5rem; font-weight: 700; margin-bottom: 32px;}
+    
+    .breakdown-item { text-align: left; background: #f9fafb; padding: 16px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid var(--border-color);}
+    .breakdown-item.correct { border-left-color: var(--success-green); }
+    .breakdown-item.incorrect { border-left-color: var(--danger-red); }
+
+    /* Google Login Wrapper */
+    .google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0; }
+
+    @media (max-width: 768px) {
+      .quiz-layout { flex-direction: column; }
+      .question-palette { width: 100%; position: static; margin-bottom: 24px; }
+      .timer-widget { top: auto; bottom: 20px; right: 50%; transform: translateX(50%); width: auto; font-size: 1rem; }
+      .card { padding: 24px; }
+      .webcam-container { top: 20px; bottom: auto; right: 20px; width: 120px; height: 90px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="g_id_onload"
+       data-client_id="643259489574-rd4r68ma879oftas8cvi1p36iqtb2ag2.apps.googleusercontent.com"
+       data-context="signin"
+       data-ux_mode="popup"
+       data-callback="handleGoogleLogin"
+       data-auto_prompt="false">
+  </div>
+
+  <div class="container">
+    
+    <div id="error-state" class="card" style="display: none; text-align: center;">
+        <i class="bi bi-x-octagon-fill" style="font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;"></i>
+        <h2 id="error-title">Access Denied</h2>
+        <p id="error-msg" style="color: var(--text-muted); margin-top: 12px;"></p>
+    </div>
+
+    <div id="section-1" class="card">
+      <div class="section-header">
+        <h1 id="intro-title">Loading Quiz...</h1>
+        <p id="intro-desc">Please wait while we set things up.</p>
       </div>
-
-      <!-- Section 2: Instructions -->
-      <div id="section-2" style="display: none">
-        <h2>Quiz Instructions</h2>
-        <div class="instructions" id="instructions-container">
-          <ul>
-            <!-- Instructions will be dynamically added here -->
-          </ul>
-        </div>
-        <label>
-          <input type="checkbox" id="agree-checkbox" required />
-          I have read and agree to follow all instructions
-        </label>
-        <button id="start-quiz-btn" disabled>Start Quiz</button>
-      </div>
-
-      <!-- Section 3: Quiz Questions (initially hidden) -->
-      <div id="section-3" style="display: none">
-        <div class="quiz-layout">
-          <!-- Question Palette -->
-          <div class="question-palette">
-            <h3>Question Palette</h3>
-            <div id="palette-container"></div>
-          </div>
-
-          <!-- Questions Container -->
-          <div class="question-container">
-            <div id="quiz-container">
-              <!-- Questions will be rendered here -->
+      
+      <div id="auth-container" style="display: none; text-align: center;">
+        <h3 style="margin-bottom: 16px; font-size: 1.2rem; border-bottom: 2px solid var(--primary-purple); padding-bottom: 8px; display: inline-block;">Student Verification</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Please sign in with your Google account to verify your identity. This email will be used for your official result.</p>
+        
+        <div class="google-btn-wrapper">
+            <div class="g_id_signin"
+                 data-type="standard"
+                 data-shape="rectangular"
+                 data-theme="outline"
+                 data-text="continue_with"
+                 data-size="large"
+                 data-logo_alignment="left">
             </div>
-          </div>
         </div>
-        <button id="submit-quiz-btn">Submit Quiz</button>
       </div>
 
-      <!-- Section 4: Results (initially hidden) -->
-      <div id="section-4" style="display: none">
-        <h2>Quiz Results</h2>
-        <div id="results-container">
-          <!-- Results will be rendered here -->
+      <form id="details-form" style="display: none;">
+        <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+            <i class="bi bi-person-check-fill" style="font-size: 1.5rem; color: var(--primary-purple);"></i>
+            <div>
+                <p style="font-weight: 600; margin: 0;" id="verified-name">Name</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="verified-email">email@example.com</p>
+            </div>
         </div>
+        
+        <div id="dynamic-fields"></div>
+        <button type="submit" class="btn btn-primary" id="btn-details">
+            <span>Continue to Instructions</span> <i class="bi bi-arrow-right"></i>
+        </button>
+      </form>
+    </div>
+
+    <div id="section-2" class="card" style="display: none;">
+      <div class="section-header">
+        <h1>Quiz Instructions</h1>
+        <p>Please read carefully before starting.</p>
+      </div>
+      
+      <div class="anti-cheat-warning">
+        <h4><i class="bi bi-shield-lock-fill"></i> Strict AI Proctoring Enabled</h4>
+        <ul style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
+            <li><strong>Face Tracking:</strong> Your webcam will monitor your head movement. If you look away from the screen continuously, you will be warned. 3 warnings = Auto Termination.</li>
+            <li><strong>Tab Switching:</strong> Leaving the quiz tab will trigger a warning. 3 warnings = Auto Termination.</li>
+            <li><strong>Copy/Paste:</strong> Copying text, pasting text, and right-clicking are strictly disabled and monitored.</li>
+        </ul>
+      </div>
+
+      <div class="instructions-box" id="instructions-container"></div>
+
+      <div style="text-align: center; margin-bottom: 24px;">
+          <button id="btn-enable-cam" class="btn" style="background: #e5e7eb; color: var(--text-main);">
+              <i class="bi bi-camera-video-fill"></i> Enable Webcam to Proceed
+          </button>
+          <p id="cam-status" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;"></p>
+      </div>
+
+      <label class="agreement">
+        <input type="checkbox" id="agree-checkbox" disabled>
+        <span>I have read the instructions, granted camera permissions, and agree to the anti-cheating policy.</span>
+      </label>
+
+      <button id="start-quiz-btn" class="btn btn-primary" disabled>
+        <i class="bi bi-play-circle-fill"></i> Start Quiz Now
+      </button>
+    </div>
+
+    <div id="section-3" style="display: none;">
+      <div id="timer" class="timer-widget" style="display: none;">
+        <i class="bi bi-stopwatch"></i> <span id="time-display">--:--</span>
+      </div>
+
+      <div class="webcam-container" id="webcam-container">
+          <video id="webcam-video" autoplay muted playsinline></video>
+          <div class="webcam-overlay" id="webcam-overlay-text">AI Monitoring Active</div>
+      </div>
+
+      <div class="quiz-layout">
+        <aside class="question-palette">
+          <h3>Question Palette</h3>
+          <div class="palette-grid" id="palette-grid"></div>
+          <div class="legend">
+            <div class="legend-item"><div class="legend-color" style="border: 2px solid var(--border-color); background: white;"></div> Not Visited</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--success-green);"></div> Answered</div>
+            <div class="legend-item"><div class="legend-color" style="background: var(--warning-yellow);"></div> Marked for Review</div>
+          </div>
+          <button id="btn-final-submit" class="btn btn-success" style="margin-top: 24px; width: 100%;">
+            <i class="bi bi-check2-all"></i> Submit Quiz
+          </button>
+        </aside>
+
+        <main class="question-area" id="question-area"></main>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/axios@0.21.1/dist/axios.min.js"></script>
-    <script src="../../js/apis/attempt/attempt.js"></script>
-  </body>
+    <div id="section-4" class="card" style="display: none;">
+      <div id="results-capture" class="results-capture">
+        <h1 style="margin-bottom: 8px;">Quiz Completed!</h1>
+        <p style="color: var(--text-muted); margin-bottom: 32px;">Here is the summary of your performance.</p>
+        
+        <div class="score-circle">
+            <div class="percentage" id="res-percentage">0%</div>
+            <div class="fraction" id="res-fraction">0 / 0</div>
+        </div>
+        
+        <div id="res-status"></div>
+        <div id="res-breakdown" style="margin-top: 32px; text-align: left;"></div>
+      </div>
+      <button class="btn btn-primary" onclick="downloadResult()" style="margin-top: 24px;">
+        <i class="bi bi-download"></i> Download Report
+      </button>
+    </div>
+
+  </div>
+
+  <div class="modal-overlay" id="warning-modal">
+    <div class="modal-content">
+      <i class="bi bi-exclamation-triangle-fill" id="warning-icon"></i>
+      <h3 id="warning-title">Warning!</h3>
+      <p id="warning-desc">Suspicious behavior detected.</p>
+      <p style="font-weight: 600; color: var(--danger-red); margin-bottom: 24px;">Warnings remaining: <span id="warnings-left">2</span></p>
+      <button class="btn btn-primary" onclick="closeWarningModal()">I Understand</button>
+    </div>
+  </div>
+
+  <script>
+    // --- Global Config & State ---
+    const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
+    const urlParams = new URLSearchParams(window.location.search);
+    const quizId = urlParams.get("id");
+
+    let quizData = null;
+    let userDetails = {};
+    let currentQuestionIndex = 0;
+    
+    // --- Advanced Anti-Cheat State ---
+    const MAX_WARNINGS = 3; 
+    let tabSwitchCount = 0;
+    let webcamStrikes = 0;
+    let copyPasteAttempts = 0;
+    let isQuizActive = false;
+    let autoSubmitted = false;
+
+    // Webcam/Face-API Variables
+    let videoEl = document.getElementById('webcam-video');
+    let faceDetectionInterval = null;
+    let noFaceFrames = 0; 
+    const MAX_NO_FACE_FRAMES = 5; // e.g., 5 seconds out of focus
+
+    // Timer State
+    let timerInterval = null;
+    let secondsRemaining = 0;
+
+    // UI Elements
+    const s1 = document.getElementById('section-1');
+    const s2 = document.getElementById('section-2');
+    const s3 = document.getElementById('section-3');
+    const s4 = document.getElementById('section-4');
+    const errState = document.getElementById('error-state');
+
+    // ==========================================
+    // 1. INITIALIZATION & DATA FETCHING
+    // ==========================================
+    async function init() {
+        if (!quizId) return showError("Invalid Link", "No Quiz ID was provided in the URL.");
+
+        try {
+            const res = await axios.get(`${API_BASE_URL}/public-quiz/${quizId}`);
+            quizData = res.data.quiz;
+            
+            // Shuffle Logic
+            if(quizData.settings?.shuffleQuestions) {
+                const indices = Array.from({length: quizData.questions.length}, (_, i) => i);
+                for (let i = indices.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [indices[i], indices[j]] = [indices[j], indices[i]];
+                }
+                quizData.shuffledQuestions = indices.map(i => ({...quizData.questions[i], originalIndex: i}));
+            } else {
+                quizData.shuffledQuestions = quizData.questions.map((q, i) => ({...q, originalIndex: i}));
+            }
+
+            document.getElementById('intro-title').textContent = quizData.title;
+            document.getElementById('intro-desc').textContent = quizData.description;
+            
+            // Show Google Auth instead of manual form
+            document.getElementById('auth-container').style.display = 'block';
+
+            // Pre-load Face API Models in the background while user logs in
+            loadFaceAPIModels();
+
+        } catch (error) {
+            console.error(error);
+            showError("Quiz Not Found", "The quiz you are looking for does not exist or is set to private.");
+        }
+    }
+
+    function showError(title, msg) {
+        s1.style.display = 'none'; s2.style.display = 'none'; s3.style.display = 'none'; s4.style.display = 'none';
+        errState.style.display = 'block';
+        document.getElementById('error-title').textContent = title;
+        document.getElementById('error-msg').textContent = msg;
+    }
+
+    // ==========================================
+    // 2. GOOGLE AUTH & DETAILS FORM
+    // ==========================================
+    async function handleGoogleLogin(response) {
+        try {
+            // Verify token on the backend
+            const res = await axios.post(`${API_BASE_URL}/verify-google-attempt`, {
+                quizId: quizId,
+                credential: response.credential
+            });
+            
+            userDetails.email = res.data.email;
+            userDetails.name = res.data.name;
+
+            // Hide Auth, Show dynamic fields for any remaining requirements
+            document.getElementById('auth-container').style.display = 'none';
+            
+            document.getElementById('verified-name').textContent = userDetails.name;
+            document.getElementById('verified-email').textContent = userDetails.email;
+            
+            buildDetailsForm();
+
+        } catch (error) {
+            alert(error.response?.data?.error || "Google Authentication failed. You may have already taken this quiz.");
+        }
+    }
+
+    function buildDetailsForm() {
+        const form = document.getElementById('details-form');
+        const container = document.getElementById('dynamic-fields');
+        form.style.display = 'block';
+
+        const fields = quizData.requiredFields || {};
+        let html = '';
+
+        // Email and Name are handled by Google. Ask for the rest if required.
+        if(fields.institution) html += `<div class="form-group"><label>Institution/School *</label><input type="text" name="institution" required></div>`;
+        if(fields.department) html += `<div class="form-group"><label>Department/Field *</label><input type="text" name="department" required></div>`;
+        if(fields.phone) html += `<div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required></div>`;
+        if(fields.dob) html += `<div class="form-group"><label>Date of Birth *</label><input type="date" name="dob" required></div>`;
+
+        container.innerHTML = html;
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            formData.forEach((val, key) => userDetails[key] = val);
+            
+            s1.style.display = 'none';
+            buildInstructions();
+            s2.style.display = 'block';
+        });
+    }
+
+    // ==========================================
+    // 3. INSTRUCTIONS & WEBCAM SETUP
+    // ==========================================
+    function buildInstructions() {
+        const container = document.getElementById('instructions-container');
+        let html = `<ul>
+            <li><strong>Total Marks:</strong> ${quizData.totalMarks}</li>
+            <li><strong>Passing Score:</strong> ${quizData.passingScore}%</li>
+        `;
+        if(quizData.timeLimit) html += `<li><strong>Time Limit:</strong> ${quizData.timeLimit} Minutes</li>`;
+        
+        if(quizData.teacherInstructions) {
+            html += `<br><li style="list-style:none; padding-left:0; color:#111827;"><strong>Teacher's Notes:</strong></li>`;
+            quizData.teacherInstructions.split('\n').forEach(note => {
+                if(note.trim()) html += `<li>${note}</li>`;
+            });
+        }
+        html += `</ul>`;
+        container.innerHTML = html;
+
+        // Camera Button Logic
+        document.getElementById('btn-enable-cam').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                videoEl.srcObject = stream;
+                document.getElementById('btn-enable-cam').style.display = 'none';
+                document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> Camera enabled successfully. Models loading...`;
+                
+                // Enable checkbox only if models are also loaded
+                checkReadyState();
+            } catch (err) {
+                document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Camera access denied. You cannot proceed.</span>`;
+            }
+        });
+
+        document.getElementById('agree-checkbox').addEventListener('change', (e) => {
+            document.getElementById('start-quiz-btn').disabled = !e.target.checked;
+        });
+
+        document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+    }
+
+    // ==========================================
+    // 4. FACE-API & ANTI-CHEAT LOGIC
+    // ==========================================
+    let modelsLoaded = false;
+
+    async function loadFaceAPIModels() {
+        try {
+            // Note: You MUST host these weights on your server in a /models directory.
+            // For testing, you can point to a public raw github url, but it's risky for production.
+            // Assuming models are at root/models.
+            const MODEL_URL = '/models'; 
+            
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            modelsLoaded = true;
+            checkReadyState();
+        } catch(e) {
+            console.error("Error loading face models:", e);
+            document.getElementById('cam-status').innerText = "Failed to load AI models. Check console.";
+        }
+    }
+
+    function checkReadyState() {
+        if (modelsLoaded && videoEl.srcObject) {
+            document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> AI Proctoring Ready.`;
+            document.getElementById('agree-checkbox').disabled = false;
+        }
+    }
+
+    function startFaceDetection() {
+        document.getElementById('webcam-container').style.display = 'block';
+        
+        faceDetectionInterval = setInterval(async () => {
+            if(!isQuizActive) return;
+
+            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions());
+            
+            if (detections.length === 0) {
+                noFaceFrames++;
+                document.getElementById('webcam-container').classList.add('warning');
+                document.getElementById('webcam-overlay-text').textContent = "FACE NOT DETECTED";
+                document.getElementById('webcam-overlay-text').style.color = "var(--danger-red)";
+
+                if (noFaceFrames >= MAX_NO_FACE_FRAMES) {
+                    triggerStrike("Webcam Focus Lost", "You have looked away from the screen or left the camera view.");
+                    noFaceFrames = 0; // Reset after issuing a strike
+                }
+            } else {
+                noFaceFrames = 0;
+                document.getElementById('webcam-container').classList.remove('warning');
+                document.getElementById('webcam-overlay-text').textContent = "AI Monitoring Active";
+                document.getElementById('webcam-overlay-text').style.color = "white";
+            }
+        }, 1000); // Check every second
+    }
+
+    // Generic Strike Function for Anti-Cheat
+    function triggerStrike(title, description) {
+        if(!isQuizActive) return;
+        
+        let totalStrikes = 0;
+        if(title === "Tab Switch Detected") { tabSwitchCount++; totalStrikes = tabSwitchCount; }
+        if(title === "Webcam Focus Lost") { webcamStrikes++; totalStrikes = webcamStrikes; }
+        
+        // If combined strikes across any vector exceed max
+        const combinedStrikes = tabSwitchCount + webcamStrikes;
+
+        if (combinedStrikes >= MAX_WARNINGS) {
+            autoSubmitted = true;
+            autoSubmitQuiz(`Anti-Cheat Enforcement: Terminated due to multiple violations.`);
+        } else {
+            showWarningModal(title, description, MAX_WARNINGS - combinedStrikes);
+        }
+    }
+
+    // Monitor Tab Switching
+    document.addEventListener("visibilitychange", () => {
+        if(document.hidden && isQuizActive) {
+            triggerStrike("Tab Switch Detected", "You minimized the browser or switched tabs. This is prohibited.");
+        }
+    });
+
+    // Disable Copy/Paste/Context Menu
+    document.addEventListener('contextmenu', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
+    document.addEventListener('copy', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
+    document.addEventListener('cut', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
+    document.addEventListener('paste', event => { if(isQuizActive) { event.preventDefault(); copyPasteAttempts++; }});
+
+    // Disable keyboard shortcuts (Ctrl+C, Ctrl+V, etc.)
+    document.addEventListener('keydown', (e) => {
+        if (isQuizActive && (e.ctrlKey || e.metaKey)) {
+            const blockedKeys = ['c', 'v', 'x', 'p', 's', 'a'];
+            if (blockedKeys.includes(e.key.toLowerCase())) {
+                e.preventDefault();
+                copyPasteAttempts++;
+            }
+        }
+    });
+
+    function showWarningModal(title, desc, left) {
+        document.getElementById('warning-title').textContent = title;
+        document.getElementById('warning-desc').textContent = desc;
+        document.getElementById('warnings-left').textContent = left;
+        document.getElementById('warning-modal').classList.add('show');
+    }
+    function closeWarningModal() { document.getElementById('warning-modal').classList.remove('show'); }
+
+
+    // ==========================================
+    // 5. QUIZ ENGINE
+    // ==========================================
+    function startQuiz() {
+        s2.style.display = 'none';
+        s3.style.display = 'block';
+        isQuizActive = true;
+
+        if (quizData.timeLimit) startTimer(quizData.timeLimit);
+        
+        startFaceDetection();
+        buildPalette();
+        buildQuestions();
+        showQuestion(0);
+
+        // Request Fullscreen for extra security (optional but recommended)
+        try { document.documentElement.requestFullscreen(); } catch(e){}
+    }
+
+    function startTimer(minutes) {
+        secondsRemaining = minutes * 60;
+        const display = document.getElementById('time-display');
+        const widget = document.getElementById('timer');
+        widget.style.display = 'flex';
+
+        timerInterval = setInterval(() => {
+            if(secondsRemaining <= 0) {
+                clearInterval(timerInterval);
+                autoSubmitQuiz("Time's Up!");
+                return;
+            }
+            secondsRemaining--;
+            const m = Math.floor(secondsRemaining / 60).toString().padStart(2, '0');
+            const s = (secondsRemaining % 60).toString().padStart(2, '0');
+            display.textContent = `${m}:${s}`;
+            if(secondsRemaining <= 300) widget.classList.add('warning'); 
+        }, 1000);
+    }
+
+    function buildPalette() {
+        const grid = document.getElementById('palette-grid');
+        grid.innerHTML = quizData.shuffledQuestions.map((q, i) => 
+            `<button class="palette-btn" id="pal-btn-${i}" onclick="showQuestion(${i})">${i + 1}</button>`
+        ).join('');
+    }
+
+    function buildQuestions() {
+        const area = document.getElementById('question-area');
+        area.innerHTML = quizData.shuffledQuestions.map((q, i) => {
+            let inputHtml = '';
+            if(q.type === 'single' || q.type === 'multiple') {
+                const inputType = q.type === 'single' ? 'radio' : 'checkbox';
+                inputHtml = `<div class="options-list">` + q.options.map(opt => `
+                    <label class="option-label">
+                        <input type="${inputType}" name="q-${i}" value="${opt.text}" onchange="markAnswered(${i})">
+                        <span>${opt.text}</span>
+                    </label>
+                `).join('') + `</div>`;
+            } else {
+                const inputType = q.type === 'integer' ? 'number' : 'text';
+                inputHtml = `<input type="${inputType}" name="q-${i}" class="form-control" placeholder="Type your answer..." autocomplete="off" oninput="markAnswered(${i})">`;
+            }
+
+            return `
+            <div class="question-card" id="q-card-${i}">
+                <div class="q-header">
+                    <div class="q-number">Question ${i + 1}</div>
+                    <div class="q-marks">${q.marks} Marks</div>
+                </div>
+                <div class="q-text">${q.text}</div>
+                ${inputHtml}
+                <div class="nav-buttons">
+                    <button class="btn-nav" onclick="showQuestion(${i - 1})" ${i === 0 ? 'disabled' : ''}>Previous</button>
+                    <button class="btn-nav btn-mark" onclick="toggleMarkReview(${i})"><i class="bi bi-flag"></i> Mark for Review</button>
+                    <button class="btn-nav" onclick="showQuestion(${i + 1})" ${i === quizData.shuffledQuestions.length - 1 ? 'disabled' : ''}>Next</button>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    function showQuestion(index) {
+        if(index < 0 || index >= quizData.shuffledQuestions.length) return;
+        document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(`q-card-${index}`).classList.add('active');
+        document.getElementById(`pal-btn-${index}`).classList.add('active');
+        currentQuestionIndex = index;
+    }
+
+    function markAnswered(index) {
+        const btn = document.getElementById(`pal-btn-${index}`);
+        const inputs = document.getElementsByName(`q-${index}`);
+        let hasValue = false;
+        if(inputs[0].type === 'radio' || inputs[0].type === 'checkbox') {
+            hasValue = Array.from(inputs).some(i => i.checked);
+        } else {
+            hasValue = inputs[0].value.trim() !== '';
+        }
+        if(hasValue) btn.classList.add('answered');
+        else btn.classList.remove('answered');
+    }
+
+    function toggleMarkReview(index) { document.getElementById(`pal-btn-${index}`).classList.toggle('marked'); }
+
+    // ==========================================
+    // 6. SUBMISSION & RESULTS
+    // ==========================================
+    document.getElementById('btn-final-submit').addEventListener('click', () => {
+        if(confirm("Are you sure you want to submit? You cannot change answers after this.")) {
+            processSubmission();
+        }
+    });
+
+    function autoSubmitQuiz(reason) {
+        closeWarningModal();
+        alert(`${reason}\nYour quiz has been automatically submitted.`);
+        processSubmission();
+    }
+
+    async function processSubmission() {
+        isQuizActive = false;
+        clearInterval(timerInterval);
+        clearInterval(faceDetectionInterval);
+        
+        // Stop Webcam
+        if(videoEl.srcObject) {
+            videoEl.srcObject.getTracks().forEach(track => track.stop());
+        }
+        document.getElementById('webcam-container').style.display = 'none';
+        
+        // Exit Fullscreen
+        try { if(document.fullscreenElement) document.exitFullscreen(); } catch(e){}
+
+        document.getElementById('btn-final-submit').disabled = true;
+        document.getElementById('btn-final-submit').textContent = "Submitting...";
+
+        const results = [];
+        let obtainedMarks = 0;
+
+        quizData.shuffledQuestions.forEach((q, i) => {
+            const inputs = document.getElementsByName(`q-${i}`);
+            let userAns = null; let isCorrect = false;
+
+            if (q.type === 'single') {
+                const checked = Array.from(inputs).find(inp => inp.checked);
+                userAns = checked ? checked.value : "Not Answered";
+                const correctOpt = q.options.find(o => o.isCorrect);
+                isCorrect = (userAns === correctOpt.text);
+            } else if (q.type === 'multiple') {
+                userAns = Array.from(inputs).filter(inp => inp.checked).map(inp => inp.value);
+                if(userAns.length === 0) userAns = "Not Answered";
+                const correctOpts = q.options.filter(o => o.isCorrect).map(o => o.text);
+                if(Array.isArray(userAns) && userAns.length === correctOpts.length) {
+                    isCorrect = userAns.every(val => correctOpts.includes(val));
+                }
+            } else {
+                userAns = inputs[0].value.trim() || "Not Answered";
+                if(q.type === 'integer') {
+                    isCorrect = parseInt(userAns) === parseInt(q.correctAnswer);
+                } else {
+                    isCorrect = userAns.toLowerCase() === q.correctAnswer.toLowerCase();
+                }
+            }
+
+            if(isCorrect) obtainedMarks += q.marks;
+
+            results.push({
+                originalIndex: q.originalIndex,
+                questionNumber: q.originalIndex + 1,
+                questionText: q.text,
+                questionType: q.type,
+                userAnswer: userAns,
+                correctAnswer: (q.type === 'single' || q.type === 'multiple') ? q.options.filter(o=>o.isCorrect).map(o=>o.text) : q.correctAnswer,
+                isCorrect: isCorrect,
+                marks: q.marks
+            });
+        });
+
+        const percentage = (obtainedMarks / quizData.totalMarks) * 100;
+
+        const payload = {
+            quizId: quizId,
+            quizDescription: quizData.title,
+            userDetails: userDetails,
+            submittedAt: new Date().toISOString(),
+            score: {
+                totalMarks: quizData.totalMarks,
+                obtainedMarks: obtainedMarks,
+                percentage: parseFloat(percentage.toFixed(2))
+            },
+            questions: results,
+            // Anti-Cheat Variables sent to backend
+            tabSwitches: tabSwitchCount,
+            webcamStrikes: webcamStrikes,
+            copyPasteAttempts: copyPasteAttempts,
+            wasAutoSubmitted: autoSubmitted,
+            isFlagged: autoSubmitted || (tabSwitchCount > 0) || (webcamStrikes > 0) || (copyPasteAttempts > 3)
+        };
+
+        try {
+            await axios.post(`${API_BASE_URL}/submission`, payload);
+            s3.style.display = 'none';
+            s4.style.display = 'block';
+            renderResults(payload);
+        } catch (error) {
+            console.error(error);
+            alert("Failed to submit to server. Please check your connection.");
+            document.getElementById('btn-final-submit').disabled = false;
+            document.getElementById('btn-final-submit').textContent = "Submit Quiz";
+        }
+    }
+
+    function renderResults(payload) {
+        document.getElementById('res-percentage').textContent = payload.score.percentage + "%";
+        document.getElementById('res-fraction').textContent = `${payload.score.obtainedMarks} / ${payload.score.totalMarks} Marks`;
+
+        const statusEl = document.getElementById('res-status');
+        if(payload.score.percentage >= quizData.passingScore) {
+            statusEl.className = 'status-pass';
+            statusEl.innerHTML = `<i class="bi bi-patch-check-fill"></i> Passed!`;
+        } else {
+            statusEl.className = 'status-fail';
+            statusEl.innerHTML = `<i class="bi bi-x-circle-fill"></i> Failed.`;
+        }
+
+        if(quizData.settings?.showAnswers) {
+            const container = document.getElementById('res-breakdown');
+            payload.questions.sort((a,b) => a.originalIndex - b.originalIndex);
+            container.innerHTML = `<h3 style="margin-bottom:16px;">Detailed Breakdown</h3>` + payload.questions.map(q => `
+                <div class="breakdown-item ${q.isCorrect ? 'correct' : 'incorrect'}">
+                    <p style="font-weight:600; margin-bottom:8px;">Q${q.questionNumber}. ${q.questionText}</p>
+                    <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:4px;">Your Answer: <strong>${Array.isArray(q.userAnswer) ? q.userAnswer.join(', ') : q.userAnswer}</strong></p>
+                    ${!q.isCorrect ? `<p style="font-size:0.9rem; color:var(--text-muted);">Correct Answer: <strong style="color:var(--success-green);">${Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}</strong></p>` : ''}
+                </div>
+            `).join('');
+        }
+    }
+
+    function downloadResult() {
+        const node = document.getElementById('results-capture');
+        html2canvas(node, { scale: 2 }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = `Quiz_Result_${userDetails.name || 'Student'}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+    }
+
+    init();
+  </script>
+</body>
 </html>

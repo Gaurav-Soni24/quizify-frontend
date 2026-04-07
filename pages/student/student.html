@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Portal - Quizify</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+
+  <style>
+    /* --- CSS Variables (Matching Premium UI) --- */
+    :root {
+      --bg-color: #f9fafb;
+      --surface-color: #ffffff;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border-color: #e5e7eb;
+      --primary-purple: #5542F6;
+      --primary-hover: #4836d4;
+      --danger-red: #ef4444;
+      --success-green: #10b981;
+      --warning-yellow: #f59e0b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* --- Navbar --- */
+    .navbar { background-color: var(--surface-color); padding: 16px 5%; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+    .brand { font-size: 1.5rem; font-weight: 800; color: var(--primary-purple); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+
+    /* --- Main Container --- */
+    .container { max-width: 1000px; margin: 40px auto; padding: 0 20px; flex: 1; width: 100%; }
+
+    /* --- Search Section --- */
+    .search-card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); text-align: center; margin-bottom: 32px; border: 1px solid var(--border-color); }
+    .search-card h1 { font-size: 2rem; color: var(--text-main); margin-bottom: 12px; font-weight: 700; }
+    .search-card p { color: var(--text-muted); margin-bottom: 32px; font-size: 1.1rem; }
+    
+    .search-form { display: flex; gap: 16px; max-width: 600px; margin: 0 auto; }
+    .search-input-group { flex: 1; position: relative; }
+    .search-input-group i { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; }
+    .search-input { width: 100%; padding: 16px 16px 16px 48px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 1.1rem; outline: none; transition: all 0.2s; }
+    .search-input:focus { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
+    
+    .btn-search { background: var(--primary-purple); color: white; border: none; padding: 0 32px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
+    .btn-search:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-2px); }
+    .btn-search:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* --- Results Section --- */
+    #results-section { display: none; animation: fadeIn 0.4s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    .student-header { display: flex; align-items: center; gap: 16px; margin-bottom: 32px; padding: 24px; background: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); }
+    .student-avatar { width: 64px; height: 64px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: var(--primary-purple); }
+    .student-info h2 { font-size: 1.5rem; margin-bottom: 4px; }
+    .student-info p { color: var(--text-muted); }
+
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    .stat-card { background: var(--surface-color); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+    .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--text-main); }
+
+    /* Submissions Table */
+    .table-card { background: var(--surface-color); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); overflow: hidden; }
+    .table-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
+    .table-header h3 { font-size: 1.25rem; display: flex; align-items: center; gap: 8px; }
+    
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 16px 24px; background: #f9fafb; color: var(--text-muted); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; border-bottom: 1px solid var(--border-color); }
+    td { padding: 16px 24px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+    tr.main-row:hover td { background-color: #f9fafb; }
+    tr:last-child td { border-bottom: none; }
+
+    .score-badge { padding: 6px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 4px; }
+    .score-excellent { background: #d1fae5; color: #065f46; }
+    .score-average { background: #fef3c7; color: #92400e; }
+    .score-poor { background: #fee2e2; color: #991b1b; }
+
+    .btn-view { padding: 8px 16px; background: transparent; border: 1px solid var(--border-color); border-radius: 6px; font-weight: 600; color: var(--text-main); cursor: pointer; transition: all 0.2s; }
+    .btn-view:hover { background: #f3f4f6; }
+
+    /* Expandable Details */
+    .details-row { display: none; background: #f9fafb; }
+    .details-row.show { display: table-row; }
+    .details-content { padding: 24px; }
+    
+    .q-item { background: white; padding: 16px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 12px; border-left: 4px solid var(--border-color); }
+    .q-item:last-child { margin-bottom: 0; }
+    .q-item.correct { border-left-color: var(--success-green); }
+    .q-item.incorrect { border-left-color: var(--danger-red); }
+    
+    .q-text { font-weight: 600; margin-bottom: 8px; font-size: 1.05rem; }
+    .q-ans { font-size: 0.95rem; color: var(--text-muted); }
+    .q-ans strong { color: var(--text-main); }
+    .q-ans .correct-text { color: var(--success-green); }
+
+    .empty-state { text-align: center; padding: 60px 20px; }
+    .empty-state i { font-size: 4rem; color: var(--border-color); margin-bottom: 16px; display: block; }
+    .empty-state h3 { font-size: 1.5rem; margin-bottom: 8px; }
+    .empty-state p { color: var(--text-muted); }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .search-form { flex-direction: column; }
+      .btn-search { padding: 16px; justify-content: center; }
+      .search-card { padding: 24px; }
+      .stats-grid { grid-template-columns: 1fr; }
+      th, td { padding: 12px 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="#" class="brand"><img src="./../../images/svg/logo.svg" alt="QuizGrad Logo" /></a>
+  </nav>
+
+  <div class="container">
+    
+    <div class="search-card">
+      <h1>Find Your Submissions</h1>
+      <p>Enter the email address you used to take your quizzes to view your history and scores.</p>
+      
+      <form class="search-form" id="search-form">
+        <div class="search-input-group">
+          <i class="bi bi-envelope"></i>
+          <input type="email" id="email-input" class="search-input" placeholder="student@example.com" required>
+        </div>
+        <button type="submit" class="btn-search" id="btn-search">
+          <i class="bi bi-search"></i> Search
+        </button>
+      </form>
+    </div>
+
+    <div id="results-section">
+      
+      <div class="student-header">
+        <div class="student-avatar"><i class="bi bi-person-fill"></i></div>
+        <div class="student-info">
+          <h2 id="student-name">Student Name</h2>
+          <p id="student-email">student@example.com</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Quizzes Taken</h3>
+          <div class="value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Average Score</h3>
+          <div class="value" id="stat-avg">0%</div>
+        </div>
+        <div class="stat-card">
+          <h3>Highest Score</h3>
+          <div class="value" id="stat-high">0%</div>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-header">
+          <h3><i class="bi bi-journal-text"></i> Quiz History</h3>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Quiz Name</th>
+                <th>Date Taken</th>
+                <th>Score</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <div id="empty-state" class="empty-state" style="display: none;">
+      <i class="bi bi-search"></i>
+      <h3 id="empty-title">No records found</h3>
+      <p id="empty-msg">We couldn't find any quiz submissions associated with that email address.</p>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
+
+    document.getElementById('search-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const email = document.getElementById('email-input').value.trim();
+      const btn = document.getElementById('btn-search');
+      const resultsSection = document.getElementById('results-section');
+      const emptyState = document.getElementById('empty-state');
+
+      // UI Loading State
+      btn.disabled = true;
+      btn.innerHTML = `<i class="bi bi-arrow-repeat"></i> Searching...`;
+      resultsSection.style.display = 'none';
+      emptyState.style.display = 'none';
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/student-submissions/${encodeURIComponent(email)}`);
+        
+        if (!response.ok) {
+            if (response.status === 404) throw new Error("No records found.");
+            throw new Error("Failed to fetch records.");
+        }
+
+        const data = await response.json();
+        const submissions = data.submissions;
+
+        if (!submissions || submissions.length === 0) throw new Error("No records found.");
+
+        renderDashboard(submissions, email);
+        
+      } catch (error) {
+        emptyState.style.display = 'block';
+        if (error.message === "No records found.") {
+            document.getElementById('empty-title').textContent = "No records found";
+            document.getElementById('empty-msg').textContent = `We couldn't find any quiz submissions for ${email}.`;
+        } else {
+            document.getElementById('empty-title').textContent = "Connection Error";
+            document.getElementById('empty-msg').textContent = "Failed to communicate with the server. Please try again.";
+        }
+      } finally {
+        // Reset button
+        btn.disabled = false;
+        btn.innerHTML = `<i class="bi bi-search"></i> Search`;
+      }
+    });
+
+    function renderDashboard(submissions, email) {
+      // 1. Set Header Info
+      // Get the name from the most recent submission
+      submissions.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+      const latestSub = submissions[0];
+      document.getElementById('student-name').textContent = latestSub.userDetails.name || "Student";
+      document.getElementById('student-email').textContent = email;
+
+      // 2. Calculate Stats
+      const totalQuizzes = submissions.length;
+      let totalPercentage = 0;
+      let highestScore = 0;
+
+      submissions.forEach(sub => {
+          const perc = sub.score.percentage;
+          totalPercentage += perc;
+          if (perc > highestScore) highestScore = perc;
+      });
+
+      document.getElementById('stat-total').textContent = totalQuizzes;
+      document.getElementById('stat-avg').textContent = (totalPercentage / totalQuizzes).toFixed(1) + "%";
+      document.getElementById('stat-high').textContent = highestScore.toFixed(1) + "%";
+
+      // 3. Render Table
+      const tbody = document.getElementById('table-body');
+      tbody.innerHTML = '';
+
+      submissions.forEach((sub, index) => {
+          const perc = sub.score.percentage;
+          
+          // Badge Styling
+          let badgeClass = 'score-poor';
+          let icon = 'bi-x-circle';
+          if (perc >= 80) { badgeClass = 'score-excellent'; icon = 'bi-patch-check'; }
+          else if (perc >= 60) { badgeClass = 'score-average'; icon = 'bi-check-circle'; }
+
+          // Main Row
+          const tr = document.createElement('tr');
+          tr.className = 'main-row';
+          tr.innerHTML = `
+            <td><strong>${sub.description || 'Untitled Quiz'}</strong></td>
+            <td>${new Date(sub.submittedAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' })}</td>
+            <td>
+                <span class="score-badge ${badgeClass}"><i class="bi ${icon}"></i> ${perc.toFixed(1)}%</span>
+                <span style="color:var(--text-muted); font-size:0.85rem; margin-left:8px;">(${sub.score.obtainedMarks}/${sub.score.totalMarks})</span>
+            </td>
+            <td><button class="btn-view" onclick="toggleDetails('details-${index}')">Review <i class="bi bi-chevron-down"></i></button></td>
+          `;
+
+          // Details Row
+          const trDetails = document.createElement('tr');
+          trDetails.id = `details-${index}`;
+          trDetails.className = 'details-row';
+
+          // Build Questions Breakdown
+          const questionsHtml = sub.questions.map(q => `
+            <div class="q-item ${q.isCorrect ? 'correct' : 'incorrect'}">
+                <div class="q-text">Q${q.questionNumber}: ${q.questionText}</div>
+                <div class="q-ans">
+                    <div>Your Answer: <strong>${Array.isArray(q.userAnswer) ? q.userAnswer.join(', ') : q.userAnswer}</strong></div>
+                    ${!q.isCorrect ? `<div>Correct Answer: <strong class="correct-text">${Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}</strong></div>` : ''}
+                </div>
+            </div>
+          `).join('');
+
+          trDetails.innerHTML = `
+            <td colspan="4" style="padding: 0;">
+                <div class="details-content">
+                    <h4 style="margin-bottom: 16px; color: var(--text-main);">Question Breakdown</h4>
+                    ${questionsHtml}
+                </div>
+            </td>
+          `;
+
+          tbody.appendChild(tr);
+          tbody.appendChild(trDetails);
+      });
+
+      // Show Section
+      document.getElementById('results-section').style.display = 'block';
+    }
+
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        const isShowing = row.classList.contains('show');
+        
+        // Close all other rows (optional accordion behavior)
+        document.querySelectorAll('.details-row').forEach(r => r.classList.remove('show'));
+        
+        if (!isShowing) {
+            row.classList.add('show');
+        }
+    }
+  </script>
+</body>
+</html>
