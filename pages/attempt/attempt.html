@@ -30,21 +30,19 @@
       --success-green: #10b981;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
     
-    /* PREVENT TEXT COPYING GLOBALLY */
     body { 
         background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; 
-        display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px;
+        display: flex; justify-content: center; align-items: center; min-height: 100vh; min-height: 100dvh; padding: 20px;
         -webkit-user-select: none; -ms-user-select: none; user-select: none;
     }
 
-    /* Allow typing in specific inputs */
     input[type="text"], input[type="number"], textarea {
         -webkit-user-select: text; -ms-user-select: text; user-select: text;
     }
 
-    /* --- Container & Cards --- */
+    /* --- Containers & Cards --- */
     .container { width: 100%; max-width: 1000px; margin: auto; }
     .card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px; animation: fadeIn 0.4s ease-out;}
     @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -54,38 +52,34 @@
     .section-header h1 { font-size: 2rem; color: var(--primary-purple); margin-bottom: 8px;}
     .section-header p { color: var(--text-muted); font-size: 1.1rem; }
 
-    /* --- Forms --- */
+    /* --- Forms & Buttons --- */
     .form-group { margin-bottom: 20px; }
     label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
-    input[type="text"], input[type="email"], input[type="number"], input[type="date"], input[type="tel"], select, textarea { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
+    input.form-control, input[type="email"], input[type="tel"], input[type="date"] { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
+    input.form-control:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
 
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background-color: var(--primary-purple); color: white; }
     .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
     .btn-primary:disabled { background-color: #a78bfa; cursor: not-allowed; transform: none; }
     .btn-success { background-color: var(--success-green); color: white; }
-    .btn-success:hover { background-color: #059669; }
 
-    /* --- Instructions --- */
     .instructions-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
-    .instructions-box ul { list-style-type: none; }
-    .instructions-box li { position: relative; padding-left: 24px; margin-bottom: 12px; color: #1e3a8a; font-weight: 500;}
+    .instructions-box li { position: relative; padding-left: 24px; margin-bottom: 12px; color: #1e3a8a; font-weight: 500; list-style: none;}
     .instructions-box li::before { content: "•"; position: absolute; left: 8px; color: #3b82f6; font-size: 1.5rem; top: -4px; }
     
     .anti-cheat-warning { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #991b1b; }
     .anti-cheat-warning h4 { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
 
     .agreement { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;}
-    .agreement input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary-purple); }
+    .agreement input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary-purple); }
 
     /* --- Quiz Layout --- */
     .quiz-layout { display: flex; gap: 24px; align-items: flex-start; }
     
     .question-palette { width: 280px; background: var(--surface-color); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); position: sticky; top: 20px;}
-    .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 8px; margin-top: 16px; margin-bottom: 24px;}
+    .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 8px; margin-top: 16px; margin-bottom: 24px;}
     .palette-btn { width: 100%; aspect-ratio: 1; border: 2px solid var(--border-color); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-    .palette-btn:hover { border-color: var(--primary-purple); }
     .palette-btn.active { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.2); }
     .palette-btn.answered { background: var(--success-green); color: white; border-color: var(--success-green); }
     .palette-btn.marked { background: var(--warning-yellow); color: white; border-color: var(--warning-yellow); }
@@ -97,22 +91,26 @@
     .question-area { flex: 1; width: 100%; }
     .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
     .question-card.active { display: block; animation: fadeIn 0.3s ease; }
+    
     .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
+    .q-header-left { display: flex; align-items: center; gap: 12px; }
     .q-number { font-size: 1.2rem; font-weight: 700; color: var(--primary-purple); }
+    .btn-mark-icon { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .btn-mark-icon.flagged { background: #fffbeb; color: #b45309; border-color: #fde68a; }
+    
     .q-marks { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); background: #f3f4f6; padding: 4px 10px; border-radius: 12px;}
     .q-text { font-size: 1.15rem; color: var(--text-main); margin-bottom: 24px; font-weight: 500; line-height: 1.6;}
 
     .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px;}
-    .option-label { display: flex; align-items: center; gap: 12px; padding: 16px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; background: #f9fafb;}
+    .option-label { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f9fafb; font-size: 1.05rem;}
     .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
-    .option-label input { width: 18px; height: 18px; accent-color: var(--primary-purple); flex-shrink: 0;}
+    .option-label input { width: 22px; height: 22px; accent-color: var(--primary-purple); flex-shrink: 0;}
     
+    /* Desktop Nav Buttons */
     .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
     .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
     .btn-nav:hover:not(:disabled) { background: #e5e7eb; }
     .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-mark { background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
-    .btn-mark:hover { background: #fef3c7; }
 
     /* --- Widgets --- */
     .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000; transition: all 0.3s;}
@@ -127,108 +125,94 @@
     /* --- Modals & Overlays --- */
     .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;}
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
-    .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s;}
+    .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s; width: 90%;}
     .modal-overlay.show .modal-content { transform: scale(1); }
     .modal-content i { font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;}
     
     .results-capture { background: white; padding: 40px; border-radius: 12px; text-align: center; }
     .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #f5f3ff; border: 8px solid var(--primary-purple); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; }
     .score-circle .percentage { font-size: 2rem; font-weight: 800; color: var(--primary-purple); }
-    
+
     .google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0; }
 
     /* ========================================= */
-    /* MOBILE RESPONSIVENESS & PALETTE TOGGLE    */
+    /* MOBILE UI/UX OVERHAUL                     */
     /* ========================================= */
     
-    /* Hidden elements by default (Desktop) */
-    .palette-toggle-btn { display: none; }
-    .close-palette-btn { display: none; }
+    .mobile-bottom-nav { display: none; }
     .palette-overlay-mobile { display: none; }
 
     @media (max-width: 768px) {
-      body { padding: 10px; }
+      body { padding: 0; align-items: flex-start; }
       
-      /* Scale down sizing and padding */
-      .card { padding: 20px 16px; margin-bottom: 16px; }
-      .section-header h1 { font-size: 1.5rem; }
+      /* Make cards full width on mobile, no borders */
+      .card { padding: 24px 20px; margin-bottom: 0; border-radius: 0; min-height: 100dvh; box-shadow: none; border-bottom: 1px solid var(--border-color); }
+      
+      .section-header { margin-top: 20px; }
+      .section-header h1 { font-size: 1.6rem; }
       .section-header p { font-size: 0.95rem; }
-      .q-number { font-size: 1.1rem; }
-      .q-text { font-size: 1rem; margin-bottom: 16px; }
-      .question-card { padding: 20px 16px; }
-      .option-label { padding: 12px; font-size: 0.95rem;}
-      .btn { padding: 12px 16px; font-size: 1rem; }
       
-      /* Relocate Widgets */
-      .timer-widget { top: 10px; right: 10px; padding: 8px 16px; font-size: 1rem; }
-      .webcam-container { top: 10px; bottom: auto; right: auto; left: 10px; width: 100px; height: 75px; border-width: 2px;}
-      .webcam-overlay { font-size: 0.6rem; }
-      .nav-buttons { flex-direction: column; gap: 12px;}
+      /* Question Area Adjustments */
+      .question-card { padding: 20px; border-radius: 0; border: none; box-shadow: none; min-height: 100dvh; padding-bottom: 100px; padding-top: 70px;}
+      .q-number { font-size: 1.15rem; }
+      .q-text { font-size: 1.05rem; margin-bottom: 20px; }
+      .option-label { padding: 14px 16px; font-size: 1rem; border-radius: 10px; margin-bottom: 4px;}
+      
+      /* Hide Desktop Nav Buttons */
+      .nav-buttons { display: none; }
+
+      /* Mobile Sticky Header (Timer & PIP) */
+      .timer-widget { 
+          top: 0; right: 0; left: 0; border-radius: 0; border: none; border-bottom: 1px solid var(--border-color);
+          justify-content: center; font-size: 1.1rem; padding: 12px; box-shadow: none; z-index: 900; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px);
+      }
+      
+      .webcam-container { 
+          top: 50px; bottom: auto; right: 16px; left: auto; 
+          width: 80px; height: 106px; /* Portrait aspect ratio for mobile */
+          border-width: 2px; border-radius: 8px; z-index: 950;
+      }
+      .webcam-overlay { font-size: 0.6rem; padding-bottom: 2px;}
+
+      /* Mobile Fixed Bottom Navigation Bar */
+      .mobile-bottom-nav {
+          display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+          background: var(--surface-color); border-top: 1px solid var(--border-color);
+          padding: 12px 20px; justify-content: space-between; align-items: center;
+          z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      }
+      .mob-nav-btn {
+          background: #f3f4f6; border: none; border-radius: 50%; width: 44px; height: 44px;
+          display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-main); cursor: pointer; transition: background 0.2s;
+      }
+      .mob-nav-btn:active { background: #e5e7eb; }
+      .mob-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+      
+      .mob-palette-btn {
+          background: var(--primary-purple); color: white; border: none; border-radius: 24px;
+          padding: 10px 24px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.3); cursor: pointer;
+      }
 
       /* Off-Canvas Mobile Question Palette */
       .quiz-layout { display: block; }
       .question-palette {
-          position: fixed;
-          top: 0;
-          left: -320px; /* Hidden off-screen */
-          width: 300px;
-          height: 100vh;
-          z-index: 3000; /* High z-index to slide over everything */
-          margin: 0;
-          border-radius: 0;
-          border-right: 1px solid var(--border-color);
-          box-shadow: 4px 0 15px rgba(0,0,0,0.1);
-          transition: left 0.3s ease;
-          overflow-y: auto;
+          position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100dvh;
+          z-index: 3000; margin: 0; border-radius: 0; border-right: 1px solid var(--border-color);
+          box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow-y: auto; padding: 24px 20px;
       }
       .question-palette.open { left: 0; }
       
-      /* Mobile Toggle FAB (Floating Action Button) */
-      .palette-toggle-btn {
-          display: flex;
-          position: fixed;
-          bottom: 20px;
-          left: 20px;
-          width: 56px;
-          height: 56px;
-          border-radius: 50%;
-          background: var(--primary-purple);
-          color: white;
-          align-items: center;
-          justify-content: center;
-          border: none;
-          box-shadow: 0 4px 12px rgba(85, 66, 246, 0.4);
-          z-index: 2000;
-          font-size: 1.5rem;
-          cursor: pointer;
-      }
-
-      /* Close Button Inside Palette */
-      .close-palette-btn {
-          display: block;
-          background: none;
-          border: none;
-          font-size: 1.5rem;
-          color: var(--text-muted);
-          cursor: pointer;
-      }
-
       .palette-header-mobile {
-          display: flex !important; 
-          justify-content: space-between; 
-          align-items: center; 
-          margin-bottom: 20px;
-          border-bottom: 1px solid var(--border-color);
-          padding-bottom: 12px;
+          display: flex !important; justify-content: space-between; align-items: center; 
+          margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;
       }
+      .close-palette-btn { background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;}
 
-      /* Dark Overlay behind the open menu */
+      /* Dark Overlay */
       .palette-overlay-mobile {
-          display: none;
-          position: fixed;
-          top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.6);
-          z-index: 2500;
+          display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.5); z-index: 2500; backdrop-filter: blur(2px);
       }
       .palette-overlay-mobile.show { display: block; }
     }
@@ -237,7 +221,7 @@
 <body>
 
   <div id="g_id_onload"
-       data-client_id="643259489574-rd4r68ma879oftas8cvi1p36iqtb2ag2.apps.googleusercontent.com"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
        data-context="signin"
        data-ux_mode="popup"
        data-callback="handleGoogleLogin"
@@ -291,7 +275,7 @@
         <h4><i class="bi bi-shield-lock-fill"></i> Strict AI Proctoring Enabled</h4>
         <ul style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
             <li><strong>Face Identity Lock:</strong> The AI locks onto your face. If another person sits in front of the camera, the exam terminates instantly.</li>
-            <li><strong>Face Tracking:</strong> Looking away from the screen or excessive movement triggers warnings.</li>
+            <li><strong>Face Tracking:</strong> Looking away from the screen triggers warnings.</li>
             <li><strong>Tab Switching:</strong> Leaving the quiz tab triggers a warning.</li>
             <li><strong>Copy/Paste Disabled:</strong> Copying, pasting, and right-clicking are prohibited.</li>
             <li style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">3 warnings = Auto Termination.</li>
@@ -319,10 +303,6 @@
 
     <div id="section-3" style="display: none;">
       
-      <button class="palette-toggle-btn" id="mobile-palette-toggle" title="View Question Palette">
-          <i class="bi bi-grid-3x3-gap-fill"></i>
-      </button>
-
       <div class="palette-overlay-mobile" id="mobile-palette-overlay"></div>
 
       <div id="timer" class="timer-widget" style="display: none;">
@@ -344,17 +324,26 @@
           <h3 class="desktop-palette-title" style="display: block;">Question Palette</h3>
           
           <div class="palette-grid" id="palette-grid"></div>
-          <div class="legend">
+          <div class="legend" style="margin-top: 20px;">
             <div class="legend-item"><div class="legend-color" style="border: 2px solid var(--border-color); background: white;"></div> Not Visited</div>
             <div class="legend-item"><div class="legend-color" style="background: var(--success-green);"></div> Answered</div>
             <div class="legend-item"><div class="legend-color" style="background: var(--warning-yellow);"></div> Marked for Review</div>
           </div>
-          <button id="btn-final-submit" class="btn btn-success" style="margin-top: 24px; width: 100%;">
+          <button id="btn-final-submit" class="btn btn-success" style="margin-top: 32px; width: 100%;">
             <i class="bi bi-check2-all"></i> Submit Quiz
           </button>
         </aside>
 
         <main class="question-area" id="question-area"></main>
+
+        <div class="mobile-bottom-nav" id="mobile-nav">
+            <button class="mob-nav-btn" id="mob-prev" onclick="navQuestionMobile(-1)"><i class="bi bi-chevron-left"></i></button>
+            <button class="mob-palette-btn" id="mobile-palette-toggle">
+                <i class="bi bi-grid-3x3-gap-fill"></i> <span id="mob-q-counter">1/10</span>
+            </button>
+            <button class="mob-nav-btn" id="mob-next" onclick="navQuestionMobile(1)"><i class="bi bi-chevron-right"></i></button>
+        </div>
+
       </div>
     </div>
 
@@ -413,15 +402,12 @@
     let videoEl = document.getElementById('webcam-video');
     let faceDetectionInterval = null;
     let modelsLoaded = false;
-    
     let baselineFaceDescriptor = null;
     const FACE_MATCH_THRESHOLD = 0.55; 
-    
     let lastFaceCenter = null;
     let excessiveMovementFrames = 0;
     const MOVEMENT_THRESHOLD = 50; 
     const MAX_MOVEMENT_FRAMES = 3; 
-    
     let noFaceFrames = 0; 
     const MAX_NO_FACE_FRAMES = 5; 
 
@@ -454,9 +440,9 @@
     closePaletteBtn.addEventListener('click', closeMobilePalette);
     mobileOverlay.addEventListener('click', closeMobilePalette);
 
-    // Hide desktop title in mobile
     if (window.innerWidth <= 768) {
         document.querySelector('.desktop-palette-title').style.display = 'none';
+        document.querySelector('.palette-header-mobile').style.display = 'flex';
     }
 
 
@@ -528,8 +514,8 @@
         const fields = quizData.requiredFields || {};
         let html = '';
 
-        if(fields.institution) html += `<div class="form-group"><label>Institution/School *</label><input type="text" name="institution" required></div>`;
-        if(fields.department) html += `<div class="form-group"><label>Department/Field *</label><input type="text" name="department" required></div>`;
+        if(fields.institution) html += `<div class="form-group"><label>Institution/School *</label><input type="text" class="form-control" name="institution" required></div>`;
+        if(fields.department) html += `<div class="form-group"><label>Department/Field *</label><input type="text" class="form-control" name="department" required></div>`;
         if(fields.phone) html += `<div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required></div>`;
         if(fields.dob) html += `<div class="form-group"><label>Date of Birth *</label><input type="date" name="dob" required></div>`;
 
@@ -630,7 +616,7 @@
             } 
             else if (detections.length > 1) {
                 webcamContainer.classList.add('warning');
-                overlayText.textContent = "MULTIPLE FACES DETECTED";
+                overlayText.textContent = "MULTIPLE FACES";
                 overlayText.style.color = "var(--danger-red)";
                 triggerStrike("Multiple Faces Detected", "Only one person is allowed in the frame during the exam.");
                 lastFaceCenter = null;
@@ -797,14 +783,18 @@
             return `
             <div class="question-card" id="q-card-${i}">
                 <div class="q-header">
-                    <div class="q-number">Question ${i + 1}</div>
-                    <div class="q-marks">${q.marks} Marks</div>
+                    <div class="q-header-left">
+                        <div class="q-number">Q${i + 1}.</div>
+                        <div class="q-marks">${q.marks} Marks</div>
+                    </div>
+                    <button class="btn-mark-icon" id="btn-mark-${i}" onclick="toggleMarkReview(${i})" title="Mark for Review">
+                        <i class="bi bi-flag-fill"></i>
+                    </button>
                 </div>
                 <div class="q-text">${q.text}</div>
                 ${inputHtml}
                 <div class="nav-buttons">
                     <button class="btn-nav" onclick="showQuestion(${i - 1})" ${i === 0 ? 'disabled' : ''}>Previous</button>
-                    <button class="btn-nav btn-mark" onclick="toggleMarkReview(${i})"><i class="bi bi-flag"></i> Mark for Review</button>
                     <button class="btn-nav" onclick="showQuestion(${i + 1})" ${i === quizData.shuffledQuestions.length - 1 ? 'disabled' : ''}>Next</button>
                 </div>
             </div>`;
@@ -819,10 +809,18 @@
         document.getElementById(`pal-btn-${index}`).classList.add('active');
         currentQuestionIndex = index;
 
-        // Auto-close palette on mobile when a question is clicked
+        // Update Mobile Nav
+        document.getElementById('mob-prev').disabled = (index === 0);
+        document.getElementById('mob-next').disabled = (index === quizData.shuffledQuestions.length - 1);
+        document.getElementById('mob-q-counter').textContent = `${index + 1}/${quizData.shuffledQuestions.length}`;
+
         if(window.innerWidth <= 768) {
             closeMobilePalette();
         }
+    }
+
+    function navQuestionMobile(dir) {
+        showQuestion(currentQuestionIndex + dir);
     }
 
     function markAnswered(index) {
@@ -838,7 +836,10 @@
         else btn.classList.remove('answered');
     }
 
-    function toggleMarkReview(index) { document.getElementById(`pal-btn-${index}`).classList.toggle('marked'); }
+    function toggleMarkReview(index) { 
+        document.getElementById(`pal-btn-${index}`).classList.toggle('marked'); 
+        document.getElementById(`btn-mark-${index}`).classList.toggle('flagged');
+    }
 
     // ==========================================
     // 7. SUBMISSION & RESULTS
@@ -860,10 +861,9 @@
         clearInterval(timerInterval);
         clearInterval(faceDetectionInterval);
         
-        // Stop Webcam
         if(videoEl.srcObject) { videoEl.srcObject.getTracks().forEach(track => track.stop()); }
         document.getElementById('webcam-container').style.display = 'none';
-        document.getElementById('mobile-palette-toggle').style.display = 'none';
+        document.getElementById('mobile-nav').style.display = 'none';
         closeMobilePalette();
         
         try { if(document.fullscreenElement) document.exitFullscreen(); } catch(e){}
@@ -938,6 +938,10 @@
             await axios.post(`${API_BASE_URL}/submission`, payload);
             s3.style.display = 'none';
             s4.style.display = 'block';
+            
+            // Remove mobile padding
+            if(window.innerWidth <= 768) { document.body.style.padding = '20px'; }
+            
             renderResults(payload);
         } catch (error) {
             console.error(error);
