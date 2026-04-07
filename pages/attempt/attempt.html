@@ -341,6 +341,10 @@
     // Timer State
     let timerInterval = null;
     let secondsRemaining = 0;
+    let lastFaceCenter = null;
+    let excessiveMovementFrames = 0;
+    const MOVEMENT_THRESHOLD = 50; // Sensitivity in pixels (lower = stricter)
+    const MAX_MOVEMENT_FRAMES = 3;
 
     // UI Elements
     const s1 = document.getElementById('section-1');
@@ -523,24 +527,78 @@
             if(!isQuizActive) return;
 
             const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions());
+            const overlayText = document.getElementById('webcam-overlay-text');
+            const webcamContainer = document.getElementById('webcam-container');
             
+            // 1. NO FACE DETECTED
             if (detections.length === 0) {
                 noFaceFrames++;
-                document.getElementById('webcam-container').classList.add('warning');
-                document.getElementById('webcam-overlay-text').textContent = "FACE NOT DETECTED";
-                document.getElementById('webcam-overlay-text').style.color = "var(--danger-red)";
+                webcamContainer.classList.add('warning');
+                overlayText.textContent = "FACE NOT DETECTED";
+                overlayText.style.color = "var(--danger-red)";
 
                 if (noFaceFrames >= MAX_NO_FACE_FRAMES) {
                     triggerStrike("Webcam Focus Lost", "You have looked away from the screen or left the camera view.");
                     noFaceFrames = 0; // Reset after issuing a strike
                 }
-            } else {
-                noFaceFrames = 0;
-                document.getElementById('webcam-container').classList.remove('warning');
-                document.getElementById('webcam-overlay-text').textContent = "AI Monitoring Active";
-                document.getElementById('webcam-overlay-text').style.color = "white";
+                lastFaceCenter = null; // Reset tracking
+            } 
+            // 2. MULTIPLE FACES DETECTED
+            else if (detections.length > 1) {
+                webcamContainer.classList.add('warning');
+                overlayText.textContent = "MULTIPLE FACES DETECTED";
+                overlayText.style.color = "var(--danger-red)";
+                
+                // Instantly trigger a strike for multiple people
+                triggerStrike("Multiple Faces Detected", "Only one person is allowed in the frame during the exam.");
+                lastFaceCenter = null;
+            } 
+            // 3. EXACTLY ONE FACE (Normal State + Movement Check)
+            else {
+                noFaceFrames = 0; // Reset no-face counter
+                
+                // Calculate current face center
+                const faceBox = detections[0].box;
+                const currentCenter = {
+                    x: faceBox.x + faceBox.width / 2,
+                    y: faceBox.y + faceBox.height / 2
+                };
+
+                // Check for excessive movement if we have a previous frame to compare
+                if (lastFaceCenter) {
+                    // Calculate Euclidean distance between last frame and current frame
+                    const distance = Math.sqrt(
+                        Math.pow(currentCenter.x - lastFaceCenter.x, 2) + 
+                        Math.pow(currentCenter.y - lastFaceCenter.y, 2)
+                    );
+
+                    if (distance > MOVEMENT_THRESHOLD) {
+                        excessiveMovementFrames++;
+                        webcamContainer.classList.add('warning');
+                        overlayText.textContent = "EXCESSIVE MOVEMENT";
+                        overlayText.style.color = "var(--warning-yellow)";
+
+                        if (excessiveMovementFrames >= MAX_MOVEMENT_FRAMES) {
+                            triggerStrike("Excessive Movement", "Please keep your head stable and focused on the screen.");
+                            excessiveMovementFrames = 0; // Reset after strike
+                        }
+                    } else {
+                        // Slowly decay the movement counter if they stabilize
+                        excessiveMovementFrames = Math.max(0, excessiveMovementFrames - 1);
+                        
+                        // All good - UI Green State
+                        if (excessiveMovementFrames === 0) {
+                            webcamContainer.classList.remove('warning');
+                            overlayText.textContent = "AI Monitoring Active";
+                            overlayText.style.color = "white";
+                        }
+                    }
+                }
+                
+                // Store current position for the next frame check
+                lastFaceCenter = currentCenter;
             }
-        }, 1000); // Check every second
+        }, 1000); // Scans 1 time per second
     }
 
     // Generic Strike Function for Anti-Cheat
