@@ -10,9 +10,7 @@
   
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 
   <style>
@@ -55,8 +53,9 @@
     /* --- Forms & Buttons --- */
     .form-group { margin-bottom: 20px; }
     label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
-    input.form-control, input[type="email"], input[type="tel"], input[type="date"] { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
-    input.form-control:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
+    input.form-control, textarea.form-control { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
+    textarea.code-input { font-family: monospace; background-color: #1e293b; color: #f8fafc; border-color: #334155; }
+    input.form-control:focus, textarea.form-control:focus { outline: none; border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
 
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background-color: var(--primary-purple); color: white; }
@@ -84,41 +83,23 @@
     .palette-btn.answered { background: var(--success-green); color: white; border-color: var(--success-green); }
     .palette-btn.marked { background: var(--warning-yellow); color: white; border-color: var(--warning-yellow); }
     
-    .legend { font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;}
-    .legend-item { display: flex; align-items: center; gap: 8px; }
-    .legend-color { width: 16px; height: 16px; border-radius: 4px; }
-
     .question-area { flex: 1; width: 100%; }
     .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
     .question-card.active { display: block; animation: fadeIn 0.3s ease; }
     
     .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
-    .q-header-left { display: flex; align-items: center; gap: 12px; }
     .q-number { font-size: 1.2rem; font-weight: 700; color: var(--primary-purple); }
-    .btn-mark-icon { background: none; border: 1px solid var(--border-color); color: var(--text-muted); width: 36px; height: 36px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-    .btn-mark-icon.flagged { background: #fffbeb; color: #b45309; border-color: #fde68a; }
-    
-    .q-marks { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); background: #f3f4f6; padding: 4px 10px; border-radius: 12px;}
     .q-text { font-size: 1.15rem; color: var(--text-main); margin-bottom: 24px; font-weight: 500; line-height: 1.6;}
 
     .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px;}
     .option-label { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f9fafb; font-size: 1.05rem;}
     .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
     .option-label input { width: 22px; height: 22px; accent-color: var(--primary-purple); flex-shrink: 0;}
-    
-    /* Desktop Nav Buttons */
-    .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
-    .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-    .btn-nav:hover:not(:disabled) { background: #e5e7eb; }
-    .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* --- Widgets --- */
-    .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000; transition: all 0.3s;}
-    .timer-widget.warning { border-color: var(--danger-red); color: var(--danger-red); animation: pulse 1s infinite; }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
-    .webcam-container { position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px; background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; transition: border-color 0.3s; }
-    .webcam-container.warning { border-color: var(--danger-red); }
+    .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000;}
+    .webcam-container { position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px; background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; }
+    .webcam-container.warning { border-color: var(--warning-yellow); }
     #webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     .webcam-overlay { position: absolute; bottom: 4px; left: 0; width: 100%; text-align: center; color: white; font-size: 0.75rem; font-weight: 600; text-shadow: 1px 1px 2px black;}
 
@@ -127,101 +108,17 @@
     .modal-overlay.show { opacity: 1; pointer-events: auto; }
     .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s; width: 90%;}
     .modal-overlay.show .modal-content { transform: scale(1); }
-    .modal-content i { font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;}
     
-    .results-capture { background: white; padding: 40px; border-radius: 12px; text-align: center; }
-    .score-circle { width: 150px; height: 150px; border-radius: 50%; background: #f5f3ff; border: 8px solid var(--primary-purple); display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0 auto 24px; }
-    .score-circle .percentage { font-size: 2rem; font-weight: 800; color: var(--primary-purple); }
+    .ai-loader-container { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .ai-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #a855f7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-    .google-btn-wrapper { display: flex; justify-content: center; margin: 24px 0; }
-
-    /* ========================================= */
-    /* MOBILE UI/UX OVERHAUL                     */
-    /* ========================================= */
-    
-    .mobile-bottom-nav { display: none; }
-    .palette-overlay-mobile { display: none; }
-
-    @media (max-width: 768px) {
-      body { padding: 0; align-items: flex-start; }
-      
-      /* Make cards full width on mobile, no borders */
-      .card { padding: 24px 20px; margin-bottom: 0; border-radius: 0; min-height: 100dvh; box-shadow: none; border-bottom: 1px solid var(--border-color); }
-      
-      .section-header { margin-top: 20px; }
-      .section-header h1 { font-size: 1.6rem; }
-      .section-header p { font-size: 0.95rem; }
-      
-      /* Question Area Adjustments */
-      .question-card { padding: 20px; border-radius: 0; border: none; box-shadow: none; min-height: 100dvh; padding-bottom: 100px; padding-top: 70px;}
-      .q-number { font-size: 1.15rem; }
-      .q-text { font-size: 1.05rem; margin-bottom: 20px; }
-      .option-label { padding: 14px 16px; font-size: 1rem; border-radius: 10px; margin-bottom: 4px;}
-      
-      /* Hide Desktop Nav Buttons */
-      .nav-buttons { display: none; }
-
-      /* Mobile Sticky Header (Timer & PIP) */
-      .timer-widget { 
-          top: 0; right: 0; left: 0; border-radius: 0; border: none; border-bottom: 1px solid var(--border-color);
-          justify-content: center; font-size: 1.1rem; padding: 12px; box-shadow: none; z-index: 900; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px);
-      }
-      
-      .webcam-container { 
-          top: 50px; bottom: auto; right: 16px; left: auto; 
-          width: 80px; height: 106px; /* Portrait aspect ratio for mobile */
-          border-width: 2px; border-radius: 8px; z-index: 950;
-      }
-      .webcam-overlay { font-size: 0.6rem; padding-bottom: 2px;}
-
-      /* Mobile Fixed Bottom Navigation Bar */
-      .mobile-bottom-nav {
-          display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-          background: var(--surface-color); border-top: 1px solid var(--border-color);
-          padding: 12px 20px; justify-content: space-between; align-items: center;
-          z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding-bottom: calc(12px + env(safe-area-inset-bottom));
-      }
-      .mob-nav-btn {
-          background: #f3f4f6; border: none; border-radius: 50%; width: 44px; height: 44px;
-          display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-main); cursor: pointer; transition: background 0.2s;
-      }
-      .mob-nav-btn:active { background: #e5e7eb; }
-      .mob-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-      
-      .mob-palette-btn {
-          background: var(--primary-purple); color: white; border: none; border-radius: 24px;
-          padding: 10px 24px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.3); cursor: pointer;
-      }
-
-      /* Off-Canvas Mobile Question Palette */
-      .quiz-layout { display: block; }
-      .question-palette {
-          position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100dvh;
-          z-index: 3000; margin: 0; border-radius: 0; border-right: 1px solid var(--border-color);
-          box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          overflow-y: auto; padding: 24px 20px;
-      }
-      .question-palette.open { left: 0; }
-      
-      .palette-header-mobile {
-          display: flex !important; justify-content: space-between; align-items: center; 
-          margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;
-      }
-      .close-palette-btn { background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;}
-
-      /* Dark Overlay */
-      .palette-overlay-mobile {
-          display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.5); z-index: 2500; backdrop-filter: blur(2px);
-      }
-      .palette-overlay-mobile.show { display: block; }
-    }
   </style>
 </head>
 <body>
 
   <div id="g_id_onload"
-       data-client_id="643259489574-rd4r68ma879oftas8cvi1p36iqtb2ag2.apps.googleusercontent.com"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
        data-context="signin"
        data-ux_mode="popup"
        data-callback="handleGoogleLogin"
@@ -243,26 +140,12 @@
       </div>
       
       <div id="auth-container" style="display: none; text-align: center;">
-        <h3 style="margin-bottom: 16px; font-size: 1.2rem; border-bottom: 2px solid var(--primary-purple); padding-bottom: 8px; display: inline-block;">Student Verification</h3>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Please sign in with your Google account to verify your identity.</p>
-        <div class="google-btn-wrapper">
-            <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="continue_with" data-size="large" data-logo_alignment="left"></div>
+        <h3>Student Verification</h3>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Sign in with your Google account. Do not reload the page after starting.</p>
+        <div style="display: flex; justify-content: center;">
+            <div class="g_id_signin" data-type="standard"></div>
         </div>
       </div>
-
-      <form id="details-form" style="display: none;">
-        <div style="background: #eff6ff; padding: 16px; border-radius: 8px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
-            <i class="bi bi-person-check-fill" style="font-size: 1.5rem; color: var(--primary-purple);"></i>
-            <div>
-                <p style="font-weight: 600; margin: 0;" id="verified-name">Name</p>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;" id="verified-email">email@example.com</p>
-            </div>
-        </div>
-        <div id="dynamic-fields"></div>
-        <button type="submit" class="btn btn-primary" id="btn-details">
-            <span>Continue to Instructions</span> <i class="bi bi-arrow-right"></i>
-        </button>
-      </form>
     </div>
 
     <div id="section-2" class="card" style="display: none;">
@@ -271,30 +154,21 @@
         <p>Please read carefully before starting.</p>
       </div>
       
-      <div class="anti-cheat-warning">
-        <h4><i class="bi bi-shield-lock-fill"></i> Strict AI Proctoring Enabled</h4>
-        <ul style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
-            <li><strong>Face Identity Lock:</strong> The AI locks onto your face. If another person sits in front of the camera, the exam terminates instantly.</li>
-            <li><strong>Face Tracking:</strong> Looking away from the screen triggers warnings.</li>
-            <li><strong>Tab Switching:</strong> Leaving the quiz tab triggers a warning.</li>
-            <li><strong>Copy/Paste Disabled:</strong> Copying, pasting, and right-clicking are prohibited.</li>
-            <li style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">3 warnings = Auto Termination.</li>
-        </ul>
+      <div class="anti-cheat-warning" id="ac-warning-box" style="display: none;">
+        <h4><i class="bi bi-shield-lock-fill"></i> Monitored Exam</h4>
+        <ul id="ac-rules-list" style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
+            </ul>
+        <p style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">Violations will severely flag your submission for the instructor.</p>
       </div>
 
       <div class="instructions-box" id="instructions-container"></div>
 
-      <div style="text-align: center; margin-bottom: 24px;">
+      <div style="text-align: center; margin-bottom: 24px;" id="cam-init-box">
           <button id="btn-enable-cam" class="btn" style="background: #e5e7eb; color: var(--text-main);">
               <i class="bi bi-camera-video-fill"></i> Enable Webcam to Proceed
           </button>
           <p id="cam-status" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;"></p>
       </div>
-
-      <label class="agreement">
-        <input type="checkbox" id="agree-checkbox" disabled>
-        <span>I have read the instructions, granted camera permissions, and agree to the AI anti-cheating policy.</span>
-      </label>
 
       <button id="start-quiz-btn" class="btn btn-primary" disabled>
         <i class="bi bi-play-circle-fill"></i> Start Quiz Now
@@ -303,432 +177,235 @@
 
     <div id="section-3" style="display: none;">
       
-      <div class="palette-overlay-mobile" id="mobile-palette-overlay"></div>
-
       <div id="timer" class="timer-widget" style="display: none;">
         <i class="bi bi-stopwatch"></i> <span id="time-display">--:--</span>
       </div>
 
       <div class="webcam-container" id="webcam-container">
           <video id="webcam-video" autoplay muted playsinline></video>
-          <div class="webcam-overlay" id="webcam-overlay-text">AI Initializing...</div>
+          <div class="webcam-overlay" id="webcam-overlay-text">AI Monitoring</div>
       </div>
 
       <div class="quiz-layout">
-        
-        <aside class="question-palette" id="question-palette">
-          <div class="palette-header-mobile" style="display: none;">
-              <h3 style="margin:0;">Questions</h3>
-              <button class="close-palette-btn" id="close-palette-btn"><i class="bi bi-x-lg"></i></button>
-          </div>
-          <h3 class="desktop-palette-title" style="display: block;">Question Palette</h3>
-          
+        <aside class="question-palette">
+          <h3>Question Palette</h3>
           <div class="palette-grid" id="palette-grid"></div>
-          <div class="legend" style="margin-top: 20px;">
-            <div class="legend-item"><div class="legend-color" style="border: 2px solid var(--border-color); background: white;"></div> Not Visited</div>
-            <div class="legend-item"><div class="legend-color" style="background: var(--success-green);"></div> Answered</div>
-            <div class="legend-item"><div class="legend-color" style="background: var(--warning-yellow);"></div> Marked for Review</div>
-          </div>
           <button id="btn-final-submit" class="btn btn-success" style="margin-top: 32px; width: 100%;">
             <i class="bi bi-check2-all"></i> Submit Quiz
           </button>
         </aside>
 
         <main class="question-area" id="question-area"></main>
-
-        <div class="mobile-bottom-nav" id="mobile-nav">
-            <button class="mob-nav-btn" id="mob-prev" onclick="navQuestionMobile(-1)"><i class="bi bi-chevron-left"></i></button>
-            <button class="mob-palette-btn" id="mobile-palette-toggle">
-                <i class="bi bi-grid-3x3-gap-fill"></i> <span id="mob-q-counter">1/10</span>
-            </button>
-            <button class="mob-nav-btn" id="mob-next" onclick="navQuestionMobile(1)"><i class="bi bi-chevron-right"></i></button>
-        </div>
-
       </div>
     </div>
 
-    <div id="section-4" class="card" style="display: none;">
-      <div id="results-capture" class="results-capture">
-        <h1 style="margin-bottom: 8px;">Quiz Completed!</h1>
-        <p style="color: var(--text-muted); margin-bottom: 32px;">Here is the summary of your performance.</p>
+    <div id="section-4" class="card" style="display: none; text-align: center;">
+        <h1 style="margin-bottom: 8px;">Submission Received</h1>
+        <p style="color: var(--text-muted); margin-bottom: 32px;">Your quiz has been successfully recorded.</p>
         
-        <div class="score-circle">
-            <div class="percentage" id="res-percentage">0%</div>
-            <div class="fraction" id="res-fraction">0 / 0</div>
-        </div>
-        
-        <div id="res-status"></div>
-        <div id="res-breakdown" style="margin-top: 32px; text-align: left;"></div>
-      </div>
-      <button class="btn btn-primary" onclick="downloadResult()" style="margin-top: 24px;">
-        <i class="bi bi-download"></i> Download Report
-      </button>
+        <div style="font-size: 3rem; font-weight: 800; color: var(--primary-purple); margin-bottom: 16px;" id="res-percentage">0%</div>
+        <div id="res-fraction" style="font-weight: 600; color: var(--text-muted);">0 / 0 Marks</div>
+        <p style="margin-top: 16px; font-size: 0.9rem;" id="ai-grade-note"></p>
     </div>
 
   </div>
 
   <div class="modal-overlay" id="warning-modal">
     <div class="modal-content">
-      <i class="bi bi-exclamation-triangle-fill" id="warning-icon"></i>
+      <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem; color: var(--warning-yellow);"></i>
       <h3 id="warning-title">Warning!</h3>
-      <p id="warning-desc">Suspicious behavior detected.</p>
-      <p style="font-weight: 600; color: var(--danger-red); margin-bottom: 24px;">Warnings remaining: <span id="warnings-left">2</span></p>
+      <p id="warning-desc" style="margin: 16px 0;"></p>
       <button class="btn btn-primary" onclick="closeWarningModal()">I Understand</button>
     </div>
   </div>
 
+  <div class="modal-overlay" id="submitting-modal">
+    <div class="modal-content ai-loader-container">
+      <div class="ai-spinner"></div>
+      <h3 id="submit-loader-text">Evaluating Answers...</h3>
+      <p style="color: var(--text-muted);">AI is currently grading your text and coding submissions. Please do not close the window.</p>
+    </div>
+  </div>
+
   <script>
-    // ==========================================
-    // GLOBAL CONFIG & STATE
-    // ==========================================
     const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get("id");
+
+    // ==========================================
+    // FRONTEND AI CONFIGURATION (Testing Only)
+    // ==========================================
+    const GEMINI_API_KEYS = [
+      "AIzaSyBa_FMGv6yH-_8iDBXnBPtZXujx9cG-tyk",
+      "AIzaSyANPiVPGbmz6SJC4I3CRta9TJOB9b8c_hE",
+      "AIzaSyCk6oC9y48d7WmePZRLq9gdSakFWQLq44w",
+      "AIzaSyCwUr1iRWdYmN_6y1IKeSVaum5V_xXYzlg",
+      "AIzaSyD0Pq8VQw3xWCFoybks_Jgu52-vBDlPPEk",
+      "AIzaSyAVXgYoIOhOunv8zPLLuknZcmp6yHbttTg",
+      "AIzaSyBlM5UCSdT-PsErncFGBagO4Nt5y222KUI"
+    ];
+    let currentGeminiKeyIndex = 0;
+
+    function getNextGeminiKey() {
+      const key = GEMINI_API_KEYS[currentGeminiKeyIndex];
+      currentGeminiKeyIndex = (currentGeminiKeyIndex + 1) % GEMINI_API_KEYS.length;
+      return key;
+    }
 
     let quizData = null;
     let userDetails = {};
     let currentQuestionIndex = 0;
     
-    // Limits
-    const MAX_WARNINGS = 3; 
+    // Anti-Cheat State
+    let isFlagged = false;
     let tabSwitchCount = 0;
     let webcamStrikes = 0;
     let copyPasteAttempts = 0;
-    let identitySwapDetected = false;
     let isQuizActive = false;
-    let autoSubmitted = false;
+    let hasAiCamera = false;
+    let hasTabCheck = false;
+    let hasCopyCheck = false;
 
-    // AI Tracking State
+    // Tracking State
     let videoEl = document.getElementById('webcam-video');
     let faceDetectionInterval = null;
     let modelsLoaded = false;
-    let baselineFaceDescriptor = null;
-    const FACE_MATCH_THRESHOLD = 0.55; 
-    let lastFaceCenter = null;
-    let excessiveMovementFrames = 0;
-    const MOVEMENT_THRESHOLD = 50; 
-    const MAX_MOVEMENT_FRAMES = 3; 
     let noFaceFrames = 0; 
-    const MAX_NO_FACE_FRAMES = 5; 
-
     let timerInterval = null;
-    let secondsRemaining = 0;
 
+    // Element Refs
     const s1 = document.getElementById('section-1');
     const s2 = document.getElementById('section-2');
     const s3 = document.getElementById('section-3');
     const s4 = document.getElementById('section-4');
 
-    // ==========================================
-    // 1. MOBILE PALETTE TOGGLE LOGIC
-    // ==========================================
-    const mobileToggle = document.getElementById('mobile-palette-toggle');
-    const mobileOverlay = document.getElementById('mobile-palette-overlay');
-    const paletteMenu = document.getElementById('question-palette');
-    const closePaletteBtn = document.getElementById('close-palette-btn');
-
-    function openMobilePalette() {
-        paletteMenu.classList.add('open');
-        mobileOverlay.classList.add('show');
-    }
-    function closeMobilePalette() {
-        paletteMenu.classList.remove('open');
-        mobileOverlay.classList.remove('show');
-    }
-
-    mobileToggle.addEventListener('click', openMobilePalette);
-    closePaletteBtn.addEventListener('click', closeMobilePalette);
-    mobileOverlay.addEventListener('click', closeMobilePalette);
-
-    if (window.innerWidth <= 768) {
-        document.querySelector('.desktop-palette-title').style.display = 'none';
-        document.querySelector('.palette-header-mobile').style.display = 'flex';
-    }
-
-
-    // ==========================================
-    // 2. INITIALIZATION
-    // ==========================================
     async function init() {
         if (!quizId) return showError("Invalid Link", "No Quiz ID was provided in the URL.");
-
         try {
             const res = await axios.get(`${API_BASE_URL}/public-quiz/${quizId}`);
             quizData = res.data.quiz;
-            
-            if(quizData.settings?.shuffleQuestions) {
-                const indices = Array.from({length: quizData.questions.length}, (_, i) => i);
-                for (let i = indices.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [indices[i], indices[j]] = [indices[j], indices[i]];
-                }
-                quizData.shuffledQuestions = indices.map(i => ({...quizData.questions[i], originalIndex: i}));
-            } else {
-                quizData.shuffledQuestions = quizData.questions.map((q, i) => ({...q, originalIndex: i}));
-            }
+            quizData.shuffledQuestions = quizData.settings?.shuffleQuestions 
+                ? [...quizData.questions].sort(() => Math.random() - 0.5).map((q, i) => ({...q, originalIndex: quizData.questions.indexOf(q)}))
+                : quizData.questions.map((q, i) => ({...q, originalIndex: i}));
 
             document.getElementById('intro-title').textContent = quizData.title;
             document.getElementById('intro-desc').textContent = quizData.description;
             document.getElementById('auth-container').style.display = 'block';
 
-            loadFaceAPIModels();
+            // Preload models if camera is required
+            if (quizData.antiCheatSettings && quizData.antiCheatSettings.aiCamera) {
+                loadFaceAPIModels();
+            }
         } catch (error) {
-            showError("Quiz Not Found", "The quiz you are looking for does not exist or is set to private.");
+            showError("Quiz Not Found", "The quiz does not exist or is private.");
         }
     }
 
     function showError(title, msg) {
-        s1.style.display = 'none'; s2.style.display = 'none'; s3.style.display = 'none'; s4.style.display = 'none';
+        s1.style.display = 'none'; s2.style.display = 'none'; s3.style.display = 'none';
         document.getElementById('error-state').style.display = 'block';
         document.getElementById('error-title').textContent = title;
         document.getElementById('error-msg').textContent = msg;
     }
 
-    // ==========================================
-    // 3. GOOGLE AUTH & DETAILS
-    // ==========================================
     async function handleGoogleLogin(response) {
         try {
-            const res = await axios.post(`${API_BASE_URL}/verify-google-attempt`, {
-                quizId: quizId, credential: response.credential
-            });
-            
+            const res = await axios.post(`${API_BASE_URL}/verify-google-attempt`, { quizId, credential: response.credential });
             userDetails.email = res.data.email;
             userDetails.name = res.data.name;
-
-            document.getElementById('auth-container').style.display = 'none';
-            document.getElementById('verified-name').textContent = userDetails.name;
-            document.getElementById('verified-email').textContent = userDetails.email;
-            
-            buildDetailsForm();
-        } catch (error) {
-            alert(error.response?.data?.error || "Authentication failed. You may have already taken this quiz.");
-        }
-    }
-
-    function buildDetailsForm() {
-        const form = document.getElementById('details-form');
-        const container = document.getElementById('dynamic-fields');
-        form.style.display = 'block';
-
-        const fields = quizData.requiredFields || {};
-        let html = '';
-
-        if(fields.institution) html += `<div class="form-group"><label>Institution/School *</label><input type="text" class="form-control" name="institution" required></div>`;
-        if(fields.department) html += `<div class="form-group"><label>Department/Field *</label><input type="text" class="form-control" name="department" required></div>`;
-        if(fields.phone) html += `<div class="form-group"><label>Phone Number *</label><input type="tel" name="phone" required></div>`;
-        if(fields.dob) html += `<div class="form-group"><label>Date of Birth *</label><input type="date" name="dob" required></div>`;
-
-        container.innerHTML = html;
-
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const formData = new FormData(form);
-            formData.forEach((val, key) => userDetails[key] = val);
             
             s1.style.display = 'none';
             buildInstructions();
             s2.style.display = 'block';
-        });
+        } catch (error) {
+            showError("Access Denied", error.response?.data?.error || "Authentication failed. You may have already taken or abandoned this quiz.");
+        }
     }
 
-    // ==========================================
-    // 4. INSTRUCTIONS & AI SETUP
-    // ==========================================
     async function loadFaceAPIModels() {
         try {
             const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
             await Promise.all([
                 faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-                faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL)
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
             ]);
             modelsLoaded = true;
             checkReadyState();
         } catch(e) {
-            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);"><i class="bi bi-x-circle-fill"></i> Failed to load AI models. Please check network.</span>`;
+            console.error(e);
+            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Failed to load AI models.</span>`;
         }
     }
 
     function buildInstructions() {
-        const container = document.getElementById('instructions-container');
-        let html = `<ul>
-            <li><strong>Total Marks:</strong> ${quizData.totalMarks}</li>
-            <li><strong>Passing Score:</strong> ${quizData.passingScore}%</li>
-        `;
-        if(quizData.timeLimit) html += `<li><strong>Time Limit:</strong> ${quizData.timeLimit} Minutes</li>`;
-        html += `</ul>`;
-        container.innerHTML = html;
+        const settings = quizData.antiCheatSettings || {};
+        hasAiCamera = !!settings.aiCamera;
+        hasTabCheck = !!settings.tabSwitch;
+        hasCopyCheck = !!settings.copyPaste;
 
-        document.getElementById('btn-enable-cam').addEventListener('click', async () => {
-            try {
-                // Modified constraints for mobile front-camera priority
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" }, audio: false });
-                videoEl.srcObject = stream;
-                document.getElementById('btn-enable-cam').style.display = 'none';
-                document.getElementById('cam-status').innerHTML = `<i class="bi bi-check-circle-fill" style="color:var(--success-green);"></i> Camera enabled. Validating AI...`;
-                checkReadyState();
-            } catch (err) {
-                document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Camera access denied. You cannot proceed.</span>`;
-            }
-        });
+        const acBox = document.getElementById('ac-warning-box');
+        const acList = document.getElementById('ac-rules-list');
+        let rulesHtml = '';
 
-        document.getElementById('agree-checkbox').addEventListener('change', (e) => {
-            document.getElementById('start-quiz-btn').disabled = !e.target.checked;
-        });
+        if(hasAiCamera) rulesHtml += `<li><strong>AI Face Tracking:</strong> Your camera must remain on. Looking away flags the attempt.</li>`;
+        if(hasTabCheck) rulesHtml += `<li><strong>Tab Lock:</strong> Leaving the quiz tab will be recorded.</li>`;
+        if(hasCopyCheck) rulesHtml += `<li><strong>No Copy/Paste:</strong> Clipboard actions and right-clicking are disabled.</li>`;
 
-        document.getElementById('start-quiz-btn').addEventListener('click', startQuiz);
+        if (rulesHtml) {
+            acBox.style.display = 'block';
+            acList.innerHTML = rulesHtml;
+        }
+
+        if (hasAiCamera) {
+            document.getElementById('btn-enable-cam').addEventListener('click', async () => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+                    videoEl.srcObject = stream;
+                    document.getElementById('btn-enable-cam').style.display = 'none';
+                    checkReadyState();
+                } catch (err) {
+                    document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Camera access required to proceed.</span>`;
+                }
+            });
+        } else {
+            document.getElementById('cam-init-box').style.display = 'none';
+            document.getElementById('start-quiz-btn').disabled = false;
+        }
+
+        document.getElementById('start-quiz-btn').addEventListener('click', startQuizLock);
     }
 
     function checkReadyState() {
+        if (!hasAiCamera) { document.getElementById('start-quiz-btn').disabled = false; return; }
         if (modelsLoaded && videoEl.srcObject) {
-            document.getElementById('cam-status').innerHTML = `<i class="bi bi-shield-check" style="color:var(--primary-purple);"></i> AI Proctoring Engine Ready.`;
-            document.getElementById('agree-checkbox').disabled = false;
+            document.getElementById('cam-status').innerHTML = `<i class="bi bi-shield-check" style="color:var(--primary-purple);"></i> AI Engine Ready.`;
+            document.getElementById('start-quiz-btn').disabled = false;
         }
     }
 
-    // ==========================================
-    // 5. AI PROCTORING ENGINE
-    // ==========================================
-    function startFaceDetection() {
-        document.getElementById('webcam-container').style.display = 'block';
-        
-        faceDetectionInterval = setInterval(async () => {
-            if(!isQuizActive) return;
+    async function startQuizLock() {
+        const btn = document.getElementById('start-quiz-btn');
+        btn.disabled = true;
+        btn.textContent = "Locking Session...";
 
-            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions())
-                                            .withFaceLandmarks()
-                                            .withFaceDescriptors();
-            
-            const overlayText = document.getElementById('webcam-overlay-text');
-            const webcamContainer = document.getElementById('webcam-container');
-            
-            if (detections.length === 0) {
-                noFaceFrames++;
-                webcamContainer.classList.add('warning');
-                overlayText.textContent = "FACE NOT DETECTED";
-                overlayText.style.color = "var(--danger-red)";
-                if (noFaceFrames >= MAX_NO_FACE_FRAMES) {
-                    triggerStrike("Webcam Focus Lost", "You have looked away from the screen or left the camera view.");
-                    noFaceFrames = 0; 
-                }
-                lastFaceCenter = null; 
-            } 
-            else if (detections.length > 1) {
-                webcamContainer.classList.add('warning');
-                overlayText.textContent = "MULTIPLE FACES";
-                overlayText.style.color = "var(--danger-red)";
-                triggerStrike("Multiple Faces Detected", "Only one person is allowed in the frame during the exam.");
-                lastFaceCenter = null;
-            } 
-            else {
-                noFaceFrames = 0; 
-                const currentDescriptor = detections[0].descriptor;
-
-                if (!baselineFaceDescriptor) {
-                    baselineFaceDescriptor = currentDescriptor;
-                    overlayText.textContent = "Identity Locked";
-                } else {
-                    const distance = faceapi.euclideanDistance(baselineFaceDescriptor, currentDescriptor);
-                    if (distance > FACE_MATCH_THRESHOLD) {
-                        identitySwapDetected = true;
-                        autoSubmitted = true;
-                        autoSubmitQuiz("Identity Swap Detected! The person taking the exam has changed. Exam Terminated.");
-                        return; 
-                    }
-                }
-
-                const faceBox = detections[0].detection.box;
-                const currentCenter = { x: faceBox.x + faceBox.width / 2, y: faceBox.y + faceBox.height / 2 };
-
-                if (lastFaceCenter) {
-                    const distance = Math.sqrt(
-                        Math.pow(currentCenter.x - lastFaceCenter.x, 2) + Math.pow(currentCenter.y - lastFaceCenter.y, 2)
-                    );
-                    if (distance > MOVEMENT_THRESHOLD) {
-                        excessiveMovementFrames++;
-                        webcamContainer.classList.add('warning');
-                        overlayText.textContent = "EXCESSIVE MOVEMENT";
-                        overlayText.style.color = "var(--warning-yellow)";
-                        if (excessiveMovementFrames >= MAX_MOVEMENT_FRAMES) {
-                            triggerStrike("Excessive Movement", "Please keep your head stable and focused on the screen.");
-                            excessiveMovementFrames = 0; 
-                        }
-                    } else {
-                        excessiveMovementFrames = Math.max(0, excessiveMovementFrames - 1);
-                        if (excessiveMovementFrames === 0) {
-                            webcamContainer.classList.remove('warning');
-                            overlayText.textContent = "AI Monitoring Active";
-                            overlayText.style.color = "white";
-                        }
-                    }
-                }
-                lastFaceCenter = currentCenter;
-            }
-        }, 1000); 
-    }
-
-    function triggerStrike(title, description) {
-        if(!isQuizActive) return;
-        
-        let totalStrikes = 0;
-        if(title === "Tab Switch Detected") { tabSwitchCount++; }
-        else { webcamStrikes++; } 
-        
-        totalStrikes = tabSwitchCount + webcamStrikes;
-
-        if (totalStrikes >= MAX_WARNINGS) {
-            autoSubmitted = true;
-            autoSubmitQuiz(`Anti-Cheat Enforcement: Terminated due to maximum rule violations (${MAX_WARNINGS}).`);
-        } else {
-            showWarningModal(title, description, MAX_WARNINGS - totalStrikes);
+        try {
+            await axios.post(`${API_BASE_URL}/start-attempt`, { quizId, email: userDetails.email });
+            launchQuizInterface();
+        } catch (error) {
+            showError("Session Error", "Could not lock session. You might have already started this quiz.");
         }
     }
 
-    // BROWSER ANTI-CHEAT RESTRICTIONS
-    document.addEventListener("visibilitychange", () => {
-        if(document.hidden && isQuizActive) {
-            triggerStrike("Tab Switch Detected", "You minimized the browser or switched tabs. This is prohibited.");
-        }
-    });
-
-    const restrictEvent = (e) => { 
-        if(isQuizActive) { e.preventDefault(); copyPasteAttempts++; }
-    };
-    document.addEventListener('contextmenu', restrictEvent);
-    document.addEventListener('copy', restrictEvent);
-    document.addEventListener('cut', restrictEvent);
-    document.addEventListener('paste', restrictEvent);
-
-    document.addEventListener('keydown', (e) => {
-        if (isQuizActive && (e.ctrlKey || e.metaKey)) {
-            const blockedKeys = ['c', 'v', 'x', 'p', 's', 'a'];
-            if (blockedKeys.includes(e.key.toLowerCase())) {
-                e.preventDefault(); copyPasteAttempts++;
-            }
-        }
-    });
-
-    function showWarningModal(title, desc, left) {
-        document.getElementById('warning-title').textContent = title;
-        document.getElementById('warning-desc').textContent = desc;
-        document.getElementById('warnings-left').textContent = left;
-        document.getElementById('warning-modal').classList.add('show');
-    }
-    function closeWarningModal() { document.getElementById('warning-modal').classList.remove('show'); }
-
-
-    // ==========================================
-    // 6. QUIZ ENGINE LOGIC
-    // ==========================================
-    function startQuiz() {
+    function launchQuizInterface() {
         s2.style.display = 'none';
         s3.style.display = 'block';
         isQuizActive = true;
 
         if (quizData.timeLimit) startTimer(quizData.timeLimit);
+        if (hasAiCamera) startFaceDetection();
+        if (hasTabCheck) enableTabTracking();
+        if (hasCopyCheck) enableCopyTracking();
         
-        startFaceDetection();
         buildPalette();
         buildQuestions();
         showQuestion(0);
@@ -736,23 +413,83 @@
         try { document.documentElement.requestFullscreen(); } catch(e){}
     }
 
+    // ==========================================
+    // ANTI-CHEAT ENGINE
+    // ==========================================
+    function startFaceDetection() {
+        document.getElementById('webcam-container').style.display = 'block';
+        
+        faceDetectionInterval = setInterval(async () => {
+            if(!isQuizActive) return;
+            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions());
+            const overlayText = document.getElementById('webcam-overlay-text');
+            const webcamContainer = document.getElementById('webcam-container');
+            
+            if (detections.length !== 1) {
+                noFaceFrames++;
+                webcamContainer.classList.add('warning');
+                overlayText.textContent = detections.length === 0 ? "FACE NOT DETECTED" : "MULTIPLE FACES";
+                overlayText.style.color = "var(--danger-red)";
+                
+                if (noFaceFrames >= 5) {
+                    triggerStrike("Camera Violation", "Ensure only your face is clearly visible to the camera.");
+                    noFaceFrames = 0; 
+                }
+            } else {
+                noFaceFrames = 0;
+                webcamContainer.classList.remove('warning');
+                overlayText.textContent = "AI Monitoring";
+                overlayText.style.color = "white";
+            }
+        }, 1000); 
+    }
+
+    function enableTabTracking() {
+        document.addEventListener("visibilitychange", () => {
+            if(document.hidden && isQuizActive) {
+                triggerStrike("Tab Switch Detected", "You minimized the browser or switched tabs.");
+                tabSwitchCount++;
+            }
+        });
+    }
+
+    function enableCopyTracking() {
+        const restrictEvent = (e) => { 
+            if(isQuizActive) { e.preventDefault(); copyPasteAttempts++; isFlagged = true;}
+        };
+        document.addEventListener('contextmenu', restrictEvent);
+        document.addEventListener('copy', restrictEvent);
+        document.addEventListener('paste', restrictEvent);
+    }
+
+    function triggerStrike(title, description) {
+        if(!isQuizActive) return;
+        isFlagged = true;
+        if(title.includes("Camera")) webcamStrikes++;
+        
+        document.getElementById('warning-title').textContent = title;
+        document.getElementById('warning-desc').textContent = description;
+        document.getElementById('warning-modal').classList.add('show');
+    }
+    function closeWarningModal() { document.getElementById('warning-modal').classList.remove('show'); }
+
+    // ==========================================
+    // QUIZ RENDER ENGINE
+    // ==========================================
     function startTimer(minutes) {
-        secondsRemaining = minutes * 60;
+        let secondsRemaining = minutes * 60;
         const display = document.getElementById('time-display');
-        const widget = document.getElementById('timer');
-        widget.style.display = 'flex';
+        document.getElementById('timer').style.display = 'flex';
 
         timerInterval = setInterval(() => {
             if(secondsRemaining <= 0) {
                 clearInterval(timerInterval);
-                autoSubmitQuiz("Time's Up! Your quiz has been submitted.");
-                return;
+                processSubmission(); return;
             }
             secondsRemaining--;
             const m = Math.floor(secondsRemaining / 60).toString().padStart(2, '0');
             const s = (secondsRemaining % 60).toString().padStart(2, '0');
             display.textContent = `${m}:${s}`;
-            if(secondsRemaining <= 300) widget.classList.add('warning'); 
         }, 1000);
     }
 
@@ -775,52 +512,31 @@
                         <span>${opt.text}</span>
                     </label>
                 `).join('') + `</div>`;
+            } else if (q.type === 'code') {
+                inputHtml = `<textarea name="q-${i}" class="form-control code-input" rows="8" placeholder="Write your code here..." oninput="markAnswered(${i})"></textarea>`;
             } else {
                 const inputType = q.type === 'integer' ? 'number' : 'text';
-                inputHtml = `<input type="${inputType}" name="q-${i}" class="form-control" placeholder="Type your answer..." autocomplete="off" oninput="markAnswered(${i})">`;
+                inputHtml = `<textarea name="q-${i}" class="form-control" rows="3" placeholder="Type your answer..." oninput="markAnswered(${i})"></textarea>`;
             }
 
             return `
             <div class="question-card" id="q-card-${i}">
                 <div class="q-header">
-                    <div class="q-header-left">
-                        <div class="q-number">Q${i + 1}.</div>
-                        <div class="q-marks">${q.marks} Marks</div>
-                    </div>
-                    <button class="btn-mark-icon" id="btn-mark-${i}" onclick="toggleMarkReview(${i})" title="Mark for Review">
-                        <i class="bi bi-flag-fill"></i>
-                    </button>
+                    <div class="q-number">Question ${i + 1}</div>
+                    <div style="font-weight:600; color:var(--text-muted);">${q.marks} Marks</div>
                 </div>
                 <div class="q-text">${q.text}</div>
                 ${inputHtml}
-                <div class="nav-buttons">
-                    <button class="btn-nav" onclick="showQuestion(${i - 1})" ${i === 0 ? 'disabled' : ''}>Previous</button>
-                    <button class="btn-nav" onclick="showQuestion(${i + 1})" ${i === quizData.shuffledQuestions.length - 1 ? 'disabled' : ''}>Next</button>
-                </div>
             </div>`;
         }).join('');
     }
 
     function showQuestion(index) {
-        if(index < 0 || index >= quizData.shuffledQuestions.length) return;
         document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
         document.getElementById(`q-card-${index}`).classList.add('active');
         document.getElementById(`pal-btn-${index}`).classList.add('active');
         currentQuestionIndex = index;
-
-        // Update Mobile Nav
-        document.getElementById('mob-prev').disabled = (index === 0);
-        document.getElementById('mob-next').disabled = (index === quizData.shuffledQuestions.length - 1);
-        document.getElementById('mob-q-counter').textContent = `${index + 1}/${quizData.shuffledQuestions.length}`;
-
-        if(window.innerWidth <= 768) {
-            closeMobilePalette();
-        }
-    }
-
-    function navQuestionMobile(dir) {
-        showQuestion(currentQuestionIndex + dir);
     }
 
     function markAnswered(index) {
@@ -836,70 +552,57 @@
         else btn.classList.remove('answered');
     }
 
-    function toggleMarkReview(index) { 
-        document.getElementById(`pal-btn-${index}`).classList.toggle('marked'); 
-        document.getElementById(`btn-mark-${index}`).classList.toggle('flagged');
-    }
-
     // ==========================================
-    // 7. SUBMISSION & RESULTS
+    // SUBMISSION & FRONTEND AI GRADING
     // ==========================================
     document.getElementById('btn-final-submit').addEventListener('click', () => {
-        if(confirm("Are you sure you want to submit? You cannot change answers after this.")) {
-            processSubmission();
-        }
+        if(confirm("Submit Quiz? You cannot change answers after this.")) processSubmission();
     });
-
-    function autoSubmitQuiz(reason) {
-        closeWarningModal();
-        alert(reason);
-        processSubmission();
-    }
 
     async function processSubmission() {
         isQuizActive = false;
         clearInterval(timerInterval);
         clearInterval(faceDetectionInterval);
-        
         if(videoEl.srcObject) { videoEl.srcObject.getTracks().forEach(track => track.stop()); }
-        document.getElementById('webcam-container').style.display = 'none';
-        document.getElementById('mobile-nav').style.display = 'none';
-        closeMobilePalette();
         
         try { if(document.fullscreenElement) document.exitFullscreen(); } catch(e){}
-
-        document.getElementById('btn-final-submit').disabled = true;
-        document.getElementById('btn-final-submit').textContent = "Submitting...";
+        
+        document.getElementById('submitting-modal').classList.add('show');
 
         const results = [];
-        let obtainedMarks = 0;
+        let totalMaxMarks = 0;
+        let autoObtainedMarks = 0;
 
+        // 1. Gather all answers and grade single/multiple choice locally
         quizData.shuffledQuestions.forEach((q, i) => {
             const inputs = document.getElementsByName(`q-${i}`);
-            let userAns = null; let isCorrect = false;
+            let userAns = null; 
+            totalMaxMarks += q.marks;
 
             if (q.type === 'single') {
                 const checked = Array.from(inputs).find(inp => inp.checked);
                 userAns = checked ? checked.value : "Not Answered";
-                const correctOpt = q.options.find(o => o.isCorrect);
-                isCorrect = (userAns === correctOpt.text);
             } else if (q.type === 'multiple') {
                 userAns = Array.from(inputs).filter(inp => inp.checked).map(inp => inp.value);
                 if(userAns.length === 0) userAns = "Not Answered";
-                const correctOpts = q.options.filter(o => o.isCorrect).map(o => o.text);
-                if(Array.isArray(userAns) && userAns.length === correctOpts.length) {
-                    isCorrect = userAns.every(val => correctOpts.includes(val));
-                }
             } else {
                 userAns = inputs[0].value.trim() || "Not Answered";
-                if(q.type === 'integer') {
-                    isCorrect = parseInt(userAns) === parseInt(q.correctAnswer);
-                } else {
-                    isCorrect = userAns.toLowerCase() === q.correctAnswer.toLowerCase();
+            }
+
+            let isCorrect = false;
+            let marksObtained = 0;
+            let correctAns = (q.type === 'single' || q.type === 'multiple') ? q.options.filter(o=>o.isCorrect).map(o=>o.text) : q.correctAnswer;
+
+            // Auto-grade MCQs
+            if (q.type === 'single' && userAns === correctAns[0]) {
+                isCorrect = true; marksObtained = q.marks;
+            } else if (q.type === 'multiple' && Array.isArray(userAns)) {
+                if (userAns.length === correctAns.length && userAns.every(v => correctAns.includes(v))) {
+                    isCorrect = true; marksObtained = q.marks;
                 }
             }
 
-            if(isCorrect) obtainedMarks += q.marks;
+            autoObtainedMarks += marksObtained;
 
             results.push({
                 originalIndex: q.originalIndex,
@@ -907,84 +610,116 @@
                 questionText: q.text,
                 questionType: q.type,
                 userAnswer: userAns,
-                correctAnswer: (q.type === 'single' || q.type === 'multiple') ? q.options.filter(o=>o.isCorrect).map(o=>o.text) : q.correctAnswer,
+                correctAnswer: correctAns,
+                marks: q.marks,
                 isCorrect: isCorrect,
-                marks: q.marks
+                marksObtained: marksObtained,
+                aiFeedback: ""
             });
         });
 
-        const percentage = (obtainedMarks / quizData.totalMarks) * 100;
+        // 2. Grade text/code answers using Frontend Gemini fetch
+        const manualGradeQuestions = results.filter(q => q.questionType === 'text' || q.questionType === 'code');
+        let aiObtainedMarks = 0;
+
+        if (manualGradeQuestions.length > 0) {
+            document.getElementById('submit-loader-text').textContent = "AI is Grading Answers...";
+            try {
+                const apiKey = getNextGeminiKey();
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+                const gradingPrompt = `
+                    You are a strict but fair automated grader. Evaluate each student answer based on the provided correct answer/rubric.
+                    Assign marks between 0 and the max marks for that question. Partial credit is allowed.
+                    
+                    Student Answers to Grade:
+                    ${JSON.stringify(manualGradeQuestions.map(q => ({
+                        questionId: q.originalIndex,
+                        question: q.questionText,
+                        studentAnswer: q.userAnswer,
+                        correctAnswerRubric: q.correctAnswer,
+                        maxMarks: q.marks
+                    })))}
+
+                    Respond strictly in JSON array format representing objects:
+                    [
+                        { "questionId": 0, "awardedMarks": 2, "isCorrect": true, "feedback": "Good explanation." }
+                    ]
+                `;
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ role: 'user', parts: [{ text: gradingPrompt }] }],
+                        generationConfig: { responseMimeType: "application/json", temperature: 0.2 }
+                    })
+                });
+
+                if (response.ok) {
+                    const resData = await response.json();
+                    const aiResponseText = resData.candidates[0].content.parts[0].text;
+                    const gradingResults = JSON.parse(aiResponseText);
+
+                    gradingResults.forEach(gradedQ => {
+                        const questionIndex = results.findIndex(q => q.originalIndex === gradedQ.questionId);
+                        if(questionIndex !== -1) {
+                            results[questionIndex].marksObtained = gradedQ.awardedMarks;
+                            results[questionIndex].isCorrect = gradedQ.awardedMarks > 0;
+                            results[questionIndex].aiFeedback = gradedQ.feedback;
+                            aiObtainedMarks += gradedQ.awardedMarks;
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Frontend AI Grading Failed:", error);
+                // We silently catch this. The backend will receive 0 marks for these if AI fails.
+            }
+        }
+
+        document.getElementById('submit-loader-text').textContent = "Saving to Database...";
+
+        // 3. Compile Final Score & Payload
+        const totalObtainedMarks = autoObtainedMarks + aiObtainedMarks;
+        const percentage = parseFloat(((totalObtainedMarks / totalMaxMarks) * 100).toFixed(2));
+
+        const finalScore = {
+            totalMarks: totalMaxMarks,
+            obtainedMarks: totalObtainedMarks,
+            percentage: percentage
+        };
 
         const payload = {
             quizId: quizId,
             quizDescription: quizData.title,
             userDetails: userDetails,
             submittedAt: new Date().toISOString(),
-            score: {
-                totalMarks: quizData.totalMarks,
-                obtainedMarks: obtainedMarks,
-                percentage: parseFloat(percentage.toFixed(2))
-            },
+            score: finalScore,
             questions: results,
             tabSwitches: tabSwitchCount,
             webcamStrikes: webcamStrikes,
             copyPasteAttempts: copyPasteAttempts,
-            identitySwapDetected: identitySwapDetected,
-            wasAutoSubmitted: autoSubmitted,
-            isFlagged: autoSubmitted || (tabSwitchCount > 0) || (webcamStrikes > 0) || (copyPasteAttempts > 3)
+            isFlagged: isFlagged || (tabSwitchCount > 0) || (webcamStrikes > 2)
         };
 
+        // 4. Send fully graded payload to Backend
         try {
-            await axios.post(`${API_BASE_URL}/submission`, payload);
+            const res = await axios.post(`${API_BASE_URL}/submission`, payload);
+            document.getElementById('submitting-modal').classList.remove('show');
             s3.style.display = 'none';
             s4.style.display = 'block';
             
-            // Remove mobile padding
-            if(window.innerWidth <= 768) { document.body.style.padding = '20px'; }
+            document.getElementById('res-percentage').textContent = finalScore.percentage + "%";
+            document.getElementById('res-fraction').textContent = `${finalScore.obtainedMarks} / ${finalScore.totalMarks} Marks`;
             
-            renderResults(payload);
+            if (manualGradeQuestions.length > 0) {
+                document.getElementById('ai-grade-note').innerHTML = `<i class="bi bi-robot" style="color:var(--primary-purple);"></i> AI has successfully graded your text and coding answers.`;
+            }
+
         } catch (error) {
-            console.error(error);
-            alert("Failed to submit to server. Please check your connection.");
-            document.getElementById('btn-final-submit').disabled = false;
-            document.getElementById('btn-final-submit').textContent = "Submit Quiz";
+            alert("Failed to submit. Please do not close the tab, check connection and try again.");
+            document.getElementById('submitting-modal').classList.remove('show');
         }
-    }
-
-    function renderResults(payload) {
-        document.getElementById('res-percentage').textContent = payload.score.percentage + "%";
-        document.getElementById('res-fraction').textContent = `${payload.score.obtainedMarks} / ${payload.score.totalMarks} Marks`;
-
-        const statusEl = document.getElementById('res-status');
-        if(payload.score.percentage >= quizData.passingScore) {
-            statusEl.className = 'status-pass';
-            statusEl.innerHTML = `<i class="bi bi-patch-check-fill"></i> Passed!`;
-        } else {
-            statusEl.className = 'status-fail';
-            statusEl.innerHTML = `<i class="bi bi-x-circle-fill"></i> Failed.`;
-        }
-
-        if(quizData.settings?.showAnswers) {
-            const container = document.getElementById('res-breakdown');
-            payload.questions.sort((a,b) => a.originalIndex - b.originalIndex);
-            container.innerHTML = `<h3 style="margin-bottom:16px;">Detailed Breakdown</h3>` + payload.questions.map(q => `
-                <div class="breakdown-item ${q.isCorrect ? 'correct' : 'incorrect'}">
-                    <p style="font-weight:600; margin-bottom:8px;">Q${q.questionNumber}. ${q.questionText}</p>
-                    <p style="font-size:0.9rem; color:var(--text-muted); margin-bottom:4px;">Your Answer: <strong>${Array.isArray(q.userAnswer) ? q.userAnswer.join(', ') : q.userAnswer}</strong></p>
-                    ${!q.isCorrect ? `<p style="font-size:0.9rem; color:var(--text-muted);">Correct Answer: <strong style="color:var(--success-green);">${Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer}</strong></p>` : ''}
-                </div>
-            `).join('');
-        }
-    }
-
-    function downloadResult() {
-        const node = document.getElementById('results-capture');
-        html2canvas(node, { scale: 2 }).then(canvas => {
-            const link = document.createElement('a');
-            link.download = `Quiz_Result_${userDetails.name || 'Student'}.png`;
-            link.href = canvas.toDataURL('image/png');
-            link.click();
-        });
     }
 
     init();

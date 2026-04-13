@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create Quiz - Quizify</title>
+  <title>Create Quiz - Quizify Secure</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
 
   <style>
-    /* --- CSS Variables (Matching the Premium Dashboard UI) --- */
+    /* --- CSS Variables --- */
     :root {
       --bg-color: #f9fafb;
       --surface-color: #ffffff;
@@ -21,6 +21,7 @@
       --primary-orange: #f59e0b;
       --danger-red: #ef4444;
       --success-green: #10b981;
+      --ai-gradient: linear-gradient(135deg, #a855f7, #6366f1);
       --sidebar-width: 260px;
     }
 
@@ -30,10 +31,9 @@
     /* --- SIDEBAR --- */
     .sidebar { width: var(--sidebar-width); background-color: var(--surface-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
     .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary-purple); margin-bottom: 32px; padding: 0 8px; text-decoration: none; }
-    
-    .btn-quick-create { background-color: var(--primary-purple); color: white; text-decoration: none; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 24px; width: 100%; transition: all 0.2s; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.2);}
+    .btn-quick-create { background-color: var(--primary-purple); color: white; text-decoration: none; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 24px; width: 100%; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.2);}
     .btn-quick-create:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-
+    
     .nav-section { margin-bottom: 24px; }
     .nav-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.05em; }
     .nav-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; transition: all 0.2s; cursor: pointer; }
@@ -50,9 +50,14 @@
     .avatar { width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-muted); }
 
     .content-wrapper { padding: 32px; max-width: 1000px; margin: 0 auto; width: 100%; padding-bottom: 100px; }
-    .dashboard-header { margin-bottom: 32px; }
+    .dashboard-header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;}
     .dashboard-header h1 { font-size: 1.8rem; color: var(--text-main); margin-bottom: 8px; font-weight: 700;}
     .dashboard-header p { color: var(--text-muted); font-size: 1rem; }
+
+    /* AI Magic Button */
+    .btn-ai { background: var(--ai-gradient); color: white; padding: 12px 24px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3); }
+    .btn-ai:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(168, 85, 247, 0.4); }
+    .btn-ai i { font-size: 1.2rem; }
 
     /* Forms & Cards */
     .card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 32px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
@@ -62,63 +67,70 @@
     .form-group { margin-bottom: 20px; }
     label { display: block; font-weight: 600; color: var(--text-main); margin-bottom: 8px; font-size: 0.95rem; }
     input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background-color: #f9fafb; transition: all 0.2s; color: var(--text-main); }
-    input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
+    input:focus, textarea:focus, select:focus { outline: none; border-color: var(--primary-purple); background-color: var(--surface-color); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
     
-    /* Settings Grid */
     .settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
     .setting-item { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; }
     .checkbox-group { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
     .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--primary-purple); cursor: pointer;}
     .checkbox-group label { margin-bottom: 0; cursor: pointer; font-weight: 500;}
-    
-    .time-limit-wrapper { display: flex; flex-direction: column; gap: 12px; }
 
+    /* Toggle Switch Styles for Anti-Cheat */
+    .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--success-green); }
+    input:checked + .slider:before { transform: translateX(20px); }
+    .toggle-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+    .toggle-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    
     /* Question Builder Styles */
     .question-card { background: #f9fafb; border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; position: relative; transition: all 0.3s; }
-    .question-card:hover { border-color: #d1d5db; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
     .question-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px dashed var(--border-color);}
     .question-header label { font-size: 1.1rem; color: var(--primary-purple); display: flex; align-items: center; gap: 8px;}
-    
     .question-tools { display: flex; align-items: center; gap: 16px; flex-wrap: wrap;}
     .marks-input { display: flex; align-items: center; gap: 8px; }
     .marks-input input { width: 80px; padding: 8px; }
-    .question-tools select { width: auto; padding: 8px 12px;}
-    
     .btn-icon { background: var(--surface-color); border: 1px solid var(--border-color); padding: 8px; border-radius: 6px; cursor: pointer; color: var(--text-muted); transition: all 0.2s;}
     .btn-icon:hover { background: #fef2f2; color: var(--danger-red); border-color: #fecaca; }
 
     .options-container { margin-top: 16px; display: flex; flex-direction: column; gap: 12px; }
     .option-row { display: flex; align-items: center; gap: 12px; background: var(--surface-color); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);}
-    .option-row input[type="text"] { flex: 1; background: transparent; border: none; padding: 0; font-size: 0.95rem; }
-    .option-row input[type="text"]:focus { box-shadow: none; border: none;}
+    .option-row input[type="text"] { flex: 1; background: transparent; border: none; padding: 0; }
     .option-row input[type="radio"], .option-row input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--success-green); cursor: pointer;}
-    
     .btn-add-option { background: none; border: 1px dashed var(--border-color); color: var(--primary-purple); font-weight: 600; padding: 12px; border-radius: 8px; cursor: pointer; width: 100%; transition: all 0.2s;}
     .btn-add-option:hover { background: #f5f3ff; border-color: var(--primary-purple); }
 
     /* Actions */
     .submit-row { display: flex; justify-content: flex-end; margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--border-color); }
-    .btn-submit { background-color: var(--success-green); color: white; padding: 14px 32px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);}
-    .btn-submit:hover { background-color: #059669; transform: translateY(-2px); box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);}
+    .btn-submit { background-color: var(--success-green); color: white; padding: 14px 32px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);}
 
-    .fab { position: fixed; bottom: 40px; right: 40px; background: var(--primary-purple); color: white; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: none; box-shadow: 0 10px 15px rgba(85, 66, 246, 0.3); cursor: pointer; transition: all 0.3s; z-index: 100;}
-    .fab:hover { transform: scale(1.05) translateY(-5px); background: var(--primary-hover); }
+    .fab { position: fixed; bottom: 40px; right: 40px; background: var(--primary-purple); color: white; width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; border: none; box-shadow: 0 10px 15px rgba(85, 66, 246, 0.3); cursor: pointer; z-index: 100;}
 
-    /* Toast Notification Container */
-    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    /* Modals & Overlays */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;}
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-content { background: white; padding: 32px; border-radius: 16px; width: 90%; max-width: 500px; transform: scale(0.9); transition: transform 0.3s; }
+    .modal-overlay.show .modal-content { transform: scale(1); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .modal-header h3 { font-size: 1.4rem; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+    .btn-close { background: none; border: none; font-size: 1.5rem; color: var(--text-muted); cursor: pointer; }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #333; color: white; padding: 12px 24px; border-radius: 8px; font-size: 0.9rem; transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000; }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.error { background: var(--danger-red); }
     .toast.success { background: var(--success-green); }
 
-    /* Responsive */
+    /* Loader */
+    .loader { display: none; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary-purple); border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     @media screen and (max-width: 992px) {
-      .hamburger { display: block; }
       .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
       .sidebar.active { left: 0; }
-      .top-header { padding: 0 20px; }
-      .content-wrapper { padding: 20px; }
-      .card { padding: 20px; }
-      .fab { bottom: 20px; right: 20px; width: 56px; height: 56px; font-size: 1.5rem;}
+      .hamburger { display: block; }
     }
   </style>
 </head>
@@ -151,8 +163,11 @@
 
     <div class="content-wrapper">
       <div class="dashboard-header">
-        <h1>Create a New Quiz</h1>
-        <p>Design your assessment, configure settings, and add your questions.</p>
+        <div>
+            <h1>Create a New Quiz</h1>
+            <p>Design your assessment, configure settings, and add your questions.</p>
+        </div>
+        <button class="btn-ai" onclick="openAIModal()"><i class="bi bi-magic"></i> Generate with AI</button>
       </div>
 
       <form id="quiz-form">
@@ -166,38 +181,22 @@
             <label for="quiz-description">Description</label>
             <textarea id="quiz-description" rows="3" placeholder="Provide a brief overview of this quiz..." required></textarea>
           </div>
-          <div class="form-group">
-            <label for="quiz-instructions">Teacher Instructions (Optional)</label>
-            <textarea id="quiz-instructions" rows="2" placeholder="Instructions shown to students before they begin..."></textarea>
-          </div>
         </div>
 
         <div class="card">
           <div class="card-title"><i class="bi bi-gear-fill"></i> Quiz Settings</div>
           <div class="settings-grid">
-            
-            <div class="setting-item time-limit-wrapper">
+            <div class="setting-item">
               <label class="checkbox-group" style="margin: 0;">
                 <input type="checkbox" id="enable-time-limit">
                 <span>Enable Time Limit</span>
               </label>
-              <input type="number" id="time-limit" min="1" max="300" placeholder="Duration in minutes" style="display: none;">
+              <input type="number" id="time-limit" min="1" max="300" placeholder="Duration in minutes" style="display: none; margin-top: 12px;">
             </div>
-
-            <div class="setting-item">
-              <label for="difficulty">Difficulty Level</label>
-              <select id="difficulty">
-                <option value="easy">Easy</option>
-                <option value="medium" selected>Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-
             <div class="setting-item">
               <label for="passing-score">Passing Score (%)</label>
               <input type="number" id="passing-score" min="1" max="100" value="60" required>
             </div>
-
             <div class="setting-item">
               <label>Submission Rules</label>
               <div class="checkbox-group">
@@ -205,31 +204,55 @@
                 <label for="show-answers">Show answers after submission</label>
               </div>
               <div class="checkbox-group">
-                <input type="checkbox" id="shuffle-questions">
+                <input type="checkbox" id="shuffle-questions" checked>
                 <label for="shuffle-questions">Shuffle Questions</label>
               </div>
             </div>
-
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-title"><i class="bi bi-person-lines-fill"></i> Required Student Details</div>
-          <p style="color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">Select the information students must provide before starting.</p>
-          <div class="settings-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px;">
-            <div class="checkbox-group"><input type="checkbox" checked disabled> <label>Email (Mandatory)</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="require-name" checked> <label for="require-name">Full Name</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="require-institution"> <label for="require-institution">Institution/School</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="require-department"> <label for="require-department">Department</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="require-phone"> <label for="require-phone">Phone Number</label></div>
-            <div class="checkbox-group"><input type="checkbox" id="require-dob"> <label for="require-dob">Date of Birth</label></div>
+        <div class="card" style="border: 2px solid #fee2e2;">
+          <div class="card-title" style="color: var(--danger-red); border-bottom-color: #fecaca;">
+            <i class="bi bi-shield-lock-fill"></i> Anti-Cheat Settings
+          </div>
+          
+          <div class="toggle-row">
+            <div>
+                <strong style="display:block; margin-bottom:4px;">AI Camera Proctoring</strong>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Monitors face orientation, detects multiple faces, and locks identity. Flags on violation.</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ac-camera" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+                <strong style="display:block; margin-bottom:4px;">Disable Tab Switching</strong>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Flags the student if they leave the quiz tab or minimize the browser.</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ac-tab" checked>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="toggle-row">
+            <div>
+                <strong style="display:block; margin-bottom:4px;">Disable Copy/Paste & Right-Click</strong>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Prevents copying questions and pasting answers from external sources.</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ac-copy" checked>
+              <span class="slider"></span>
+            </label>
           </div>
         </div>
 
         <div id="questions-wrapper">
           <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 20px; font-weight: 700;">Questions Setup</h2>
-          <div id="questions-container">
-            </div>
+          <div id="questions-container"></div>
         </div>
 
         <div class="submit-row">
@@ -241,19 +264,73 @@
 
   <button type="button" class="fab" onclick="addQuestion()" title="Add New Question"><i class="bi bi-plus-lg"></i></button>
 
+  <div class="modal-overlay" id="ai-modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3><i class="bi bi-magic" style="color: #a855f7;"></i> Generate with AI</h3>
+        <button class="btn-close" onclick="closeAIModal()"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">Let AI generate the perfect quiz. Review and edit the questions before publishing.</p>
+      
+      <form id="ai-form">
+        <div class="form-group">
+          <label>Topic *</label>
+          <input type="text" id="ai-topic" placeholder="e.g., JavaScript Promises, World War 2" required>
+        </div>
+        <div class="form-group">
+          <label>Field / Department</label>
+          <input type="text" id="ai-field" placeholder="e.g., Computer Science, History">
+        </div>
+        <div class="form-group">
+          <label>More Description (Optional)</label>
+          <textarea id="ai-desc" rows="2" placeholder="Specific areas to focus on..."></textarea>
+        </div>
+        <div class="form-group">
+          <label>Difficulty</label>
+          <select id="ai-difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium" selected>Medium</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-ai" id="btn-ai-submit" style="width: 100%; justify-content: center; margin-top: 16px;">
+          <span>Generate Quiz</span>
+          <div class="loader" id="ai-loader"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+
   <div id="toast" class="toast">Message goes here</div>
 
   <script>
     const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
     const token = localStorage.getItem("token");
-
     if (!token) window.location.href = "/login";
 
-    // --- State Management ---
-    let questionCount = 0;
-    let formChanged = false;
+    // ==========================================
+    // FRONTEND AI CONFIGURATION (Testing Only)
+    // ==========================================
+    const GEMINI_API_KEYS = [
+      "AIzaSyBa_FMGv6yH-_8iDBXnBPtZXujx9cG-tyk",
+      "AIzaSyANPiVPGbmz6SJC4I3CRta9TJOB9b8c_hE",
+      "AIzaSyCk6oC9y48d7WmePZRLq9gdSakFWQLq44w",
+      "AIzaSyCwUr1iRWdYmN_6y1IKeSVaum5V_xXYzlg",
+      "AIzaSyD0Pq8VQw3xWCFoybks_Jgu52-vBDlPPEk",
+      "AIzaSyAVXgYoIOhOunv8zPLLuknZcmp6yHbttTg",
+      "AIzaSyBlM5UCSdT-PsErncFGBagO4Nt5y222KUI"
+    ];
+    let currentGeminiKeyIndex = 0;
 
-    // --- UI Helpers ---
+    function getNextGeminiKey() {
+      const key = GEMINI_API_KEYS[currentGeminiKeyIndex];
+      currentGeminiKeyIndex = (currentGeminiKeyIndex + 1) % GEMINI_API_KEYS.length;
+      return key;
+    }
+
+    let questionCount = 0;
+
+    // UI Helpers
     const toastEl = document.getElementById("toast");
     function showToast(message, type = 'success') {
       toastEl.textContent = message;
@@ -261,7 +338,6 @@
       setTimeout(() => { toastEl.classList.remove('show'); }, 3000);
     }
 
-    // --- Sidebar & Navigation ---
     document.getElementById("hamburger").addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("active");
     });
@@ -270,95 +346,237 @@
       window.location.href = "/login";
     });
 
-    // Prevent accidental navigation
-    window.addEventListener('beforeunload', (e) => {
-        if (formChanged) {
-            e.preventDefault();
-            e.returnValue = '';
-        }
-    });
-
-    // --- Settings UI Logic ---
     document.getElementById('enable-time-limit').addEventListener('change', function() {
         const timeInput = document.getElementById('time-limit');
         timeInput.style.display = this.checked ? 'block' : 'none';
         timeInput.required = this.checked;
-        if (!this.checked) timeInput.value = '';
     });
 
-    document.getElementById('quiz-form').addEventListener('input', () => { formChanged = true; });
+    // ==========================================
+    // AI QUESTION GENERATOR LOGIC (Frontend Only)
+    // ==========================================
+    const aiModal = document.getElementById('ai-modal');
+    function openAIModal() { aiModal.classList.add('show'); }
+    function closeAIModal() { aiModal.classList.remove('show'); }
 
-    // --- Question Builder Logic ---
-    function autoResizeTextarea(textarea) {
-        textarea.style.height = 'auto';
-        textarea.style.height = (textarea.scrollHeight) + 'px';
-    }
+    document.getElementById('ai-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-ai-submit');
+        const loader = document.getElementById('ai-loader');
+        
+        submitBtn.disabled = true;
+        submitBtn.querySelector('span').textContent = 'Generating...';
+        loader.style.display = 'block';
 
-    function addQuestion() {
+        const topic = document.getElementById('ai-topic').value;
+        const field = document.getElementById('ai-field').value;
+        const description = document.getElementById('ai-desc').value;
+        const difficulty = document.getElementById('ai-difficulty').value;
+
+        const promptText = `
+            You are an expert educator. Generate a quiz based on the following:
+            Topic: ${topic}
+            Description/Context: ${description || "General knowledge"}
+            Field of Study: ${field || "General"}
+            Difficulty: ${difficulty}
+
+            Generate exactly 25 questions. Include a mix of 'single' (multiple choice with one correct answer), 'multiple' (multiple choice with multiple correct answers), 'integer', and 'text' (short answer) questions.
+
+            Also, recommend a timeLimit (in minutes) and antiCheat settings based on the difficulty.
+            
+            Respond strictly in the following JSON schema:
+            {
+                "recommendedTimeLimit": 30,
+                "recommendedAntiCheat": {
+                "copyPaste": true,
+                "tabSwitch": true,
+                "aiCamera": true
+                },
+                "questions": [
+                {
+                    "type": "single",
+                    "text": "Question text here?",
+                    "marks": 2,
+                    "options": [
+                    { "text": "Option 1", "isCorrect": true },
+                    { "text": "Option 2", "isCorrect": false }
+                    ]
+                },
+                {
+                    "type": "text",
+                    "text": "Explain the concept of...",
+                    "marks": 5,
+                    "correctAnswer": "A brief explanation indicating..."
+                }
+                ]
+            }
+        `;
+
+        try {
+            const apiKey = getNextGeminiKey();
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ role: 'user', parts: [{ text: promptText }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        maxOutputTokens: 8192, // Increased significantly to avoid MAX_TOKENS cutoff
+                        temperature: 0.4
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error?.message || "Failed to generate AI response.");
+            }
+
+            const resData = await response.json();
+            
+            // Check if response was cut off just in case
+            if(resData.candidates[0].finishReason === 'MAX_TOKENS') {
+                throw new Error("The AI response was cut off because it was too long. Please try a simpler topic.");
+            }
+
+            const aiResponseText = resData.candidates[0].content.parts[0].text;
+            const data = JSON.parse(aiResponseText);
+
+            // Clear existing questions
+            document.getElementById('questions-container').innerHTML = '';
+            questionCount = 0;
+
+            // Apply AI Recommendations
+            if(data.recommendedTimeLimit) {
+                document.getElementById('enable-time-limit').checked = true;
+                document.getElementById('time-limit').style.display = 'block';
+                document.getElementById('time-limit').value = data.recommendedTimeLimit;
+            }
+            if(data.recommendedAntiCheat) {
+                document.getElementById('ac-camera').checked = !!data.recommendedAntiCheat.aiCamera;
+                document.getElementById('ac-tab').checked = !!data.recommendedAntiCheat.tabSwitch;
+                document.getElementById('ac-copy').checked = !!data.recommendedAntiCheat.copyPaste;
+            }
+
+            // Populate Questions
+            data.questions.forEach(qData => {
+                addQuestion(qData);
+            });
+
+            closeAIModal();
+            showToast("Quiz generated successfully! Please review the questions.");
+            
+            // Auto-fill Title if empty
+            if(!document.getElementById('quiz-title').value) {
+                document.getElementById('quiz-title').value = `${topic} Assessment`;
+            }
+
+        } catch (error) {
+            console.error("AI Generation Error:", error);
+            showToast(error.message || "Failed to generate questions. Please try again.", 'error');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.querySelector('span').textContent = 'Generate Quiz';
+            loader.style.display = 'none';
+        }
+    });
+
+    // ==========================================
+    // QUESTION BUILDER LOGIC (Modified for AI Prefill)
+    // ==========================================
+    function addQuestion(prefillData = null) {
         questionCount++;
+        const qId = questionCount;
+        
+        const qType = prefillData ? prefillData.type : 'single';
+        const qText = prefillData ? prefillData.text : '';
+        const qMarks = prefillData ? prefillData.marks : 1;
+
         const questionHtml = `
-            <div class="question-card" id="question-${questionCount}-container">
+            <div class="question-card" id="question-${qId}-container">
                 <div class="question-header">
-                    <label for="question-${questionCount}"><i class="bi bi-question-circle-fill"></i> Question <span class="q-num">${questionCount}</span></label>
+                    <label for="question-${qId}"><i class="bi bi-question-circle-fill"></i> Question <span class="q-num">${qId}</span></label>
                     <div class="question-tools">
                         <div class="marks-input">
                             <label style="margin:0; font-size:0.85rem;">Marks</label>
-                            <input type="number" id="marks-${questionCount}" min="0.5" step="0.5" value="1" required>
+                            <input type="number" id="marks-${qId}" min="0.5" step="0.5" value="${qMarks}" required>
                         </div>
-                        <select id="question-type-${questionCount}" onchange="updateQuestionType(${questionCount})" required>
-                            <option value="single">Single Choice (Radio)</option>
-                            <option value="multiple">Multiple Choice (Checkbox)</option>
-                            <option value="text">Short Text</option>
-                            <option value="integer">Numeric</option>
+                        <select id="question-type-${qId}" onchange="updateQuestionType(${qId})" required>
+                            <option value="single" ${qType === 'single' ? 'selected' : ''}>Single Choice (Radio)</option>
+                            <option value="multiple" ${qType === 'multiple' ? 'selected' : ''}>Multiple Choice (Checkbox)</option>
+                            <option value="text" ${qType === 'text' ? 'selected' : ''}>Short Text</option>
+                            <option value="integer" ${qType === 'integer' ? 'selected' : ''}>Numeric</option>
+                            <option value="code" ${qType === 'code' ? 'selected' : ''}>Code Snippet</option>
                         </select>
-                        <button type="button" class="btn-icon" onclick="deleteQuestion(${questionCount})" title="Delete Question"><i class="bi bi-trash-fill"></i></button>
+                        <button type="button" class="btn-icon" onclick="deleteQuestion(${qId})" title="Delete Question"><i class="bi bi-trash-fill"></i></button>
                     </div>
                 </div>
                 
                 <textarea 
-                    id="question-${questionCount}" 
+                    id="question-${qId}" 
                     placeholder="Enter your question here..." 
                     rows="2" required 
                     style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; resize: vertical;"
-                    oninput="autoResizeTextarea(this)"></textarea>
+                >${qText}</textarea>
                 
-                <div id="options-${questionCount}" class="options-container">
-                    </div>
+                <div id="options-${qId}" class="options-container"></div>
                 
-                <button type="button" class="btn-add-option" id="btn-add-opt-${questionCount}" onclick="addOption(${questionCount})" style="margin-top: 12px;">
+                <button type="button" class="btn-add-option" id="btn-add-opt-${qId}" onclick="addOption(${qId})" style="margin-top: 12px;">
                     <i class="bi bi-plus-circle"></i> Add Option
                 </button>
             </div>
         `;
+        
         document.getElementById('questions-container').insertAdjacentHTML('beforeend', questionHtml);
-        updateQuestionType(questionCount);
-        formChanged = true;
+        
+        // Handle Options Prefill
+        const optionsContainer = document.getElementById(`options-${qId}`);
+        const addBtn = document.getElementById(`btn-add-opt-${qId}`);
+        
+        if (qType === 'single' || qType === 'multiple') {
+            addBtn.style.display = 'block';
+            if(prefillData && prefillData.options) {
+                prefillData.options.forEach(opt => addOption(qId, opt.text, opt.isCorrect));
+            } else {
+                addOption(qId); addOption(qId);
+            }
+        } else {
+            addBtn.style.display = 'none';
+            const placeholder = qType === 'code' ? 'Enter expected output or rubrics for AI grading' : 'Enter the exact correct answer or grading rubric';
+            const val = prefillData ? prefillData.correctAnswer : '';
+            optionsContainer.innerHTML = `
+                <div class="option-row" style="background: var(--surface-color);">
+                    <i class="bi bi-check2-square" style="color: var(--success-green);"></i>
+                    <input type="text" id="correct-ans-${qId}" placeholder="${placeholder}" value="${val}" required>
+                </div>
+            `;
+        }
     }
 
     function updateQuestionType(qId) {
         const type = document.getElementById(`question-type-${qId}`).value;
         const optionsContainer = document.getElementById(`options-${qId}`);
         const addBtn = document.getElementById(`btn-add-opt-${qId}`);
-        
         optionsContainer.innerHTML = '';
 
         if (type === 'single' || type === 'multiple') {
             addBtn.style.display = 'block';
-            addOption(qId);
-            addOption(qId);
+            addOption(qId); addOption(qId);
         } else {
             addBtn.style.display = 'none';
+            const placeholder = type === 'code' ? 'Enter expected output or rubrics for AI grading' : 'Enter the exact correct answer or grading rubric';
             optionsContainer.innerHTML = `
                 <div class="option-row" style="background: var(--surface-color);">
                     <i class="bi bi-check2-square" style="color: var(--success-green);"></i>
-                    <input type="text" id="correct-ans-${qId}" placeholder="Enter the exact correct answer" required>
+                    <input type="text" id="correct-ans-${qId}" placeholder="${placeholder}" required>
                 </div>
             `;
         }
-        formChanged = true;
     }
 
-    function addOption(qId) {
+    function addOption(qId, optText = '', isCorrect = false) {
         const container = document.getElementById(`options-${qId}`);
         const type = document.getElementById(`question-type-${qId}`).value;
         const inputType = type === 'single' ? 'radio' : 'checkbox';
@@ -366,73 +584,52 @@
 
         const html = `
             <div class="option-row">
-                <input type="${inputType}" name="correct-${qId}" value="${optCount-1}" title="Mark as correct answer">
-                <input type="text" name="option-text-${qId}[]" placeholder="Option ${optCount}" required>
+                <input type="${inputType}" name="correct-${qId}" value="${optCount-1}" ${isCorrect ? 'checked' : ''} title="Mark as correct answer">
+                <input type="text" name="option-text-${qId}[]" placeholder="Option ${optCount}" value="${optText}" required>
                 <button type="button" class="btn-icon" onclick="this.parentElement.remove()" style="padding: 4px; border:none;"><i class="bi bi-x-lg"></i></button>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', html);
-        formChanged = true;
     }
 
     function deleteQuestion(qId) {
         document.getElementById(`question-${qId}-container`).remove();
-        updateQuestionNumbers();
-        formChanged = true;
-    }
-
-    function updateQuestionNumbers() {
+        // Re-numbering
         const questions = document.querySelectorAll('.question-card');
-        questions.forEach((card, index) => {
-            const newNum = index + 1;
-            card.querySelector('.q-num').textContent = newNum;
-        });
-        questionCount = questions.length;
+        questions.forEach((card, index) => { card.querySelector('.q-num').textContent = index + 1; });
     }
 
-    // --- Form Submission ---
+    // ==========================================
+    // FORM SUBMISSION (Saves to Backend)
+    // ==========================================
     document.getElementById('quiz-form').addEventListener('submit', async function(e) {
         e.preventDefault();
-
         const questionsUI = document.querySelectorAll('.question-card');
-        if (questionsUI.length === 0) {
-            showToast('Please add at least one question.', 'error');
-            return;
-        }
+        if (questionsUI.length === 0) return showToast('Please add at least one question.', 'error');
 
         const submitBtn = document.getElementById('btn-submit-form');
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Publishing...';
+        submitBtn.disabled = true; submitBtn.innerHTML = 'Publishing...';
 
         try {
-            // Build Payload
             const payload = {
                 title: document.getElementById('quiz-title').value.trim(),
                 description: document.getElementById('quiz-description').value.trim(),
-                teacherInstructions: document.getElementById('quiz-instructions').value.trim(),
-                isPublic: false,
-                requiredFields: {
-                    name: document.getElementById('require-name').checked,
-                    email: true, // Always true
-                    dob: document.getElementById('require-dob').checked,
-                    institution: document.getElementById('require-institution').checked,
-                    department: document.getElementById('require-department').checked,
-                    phone: document.getElementById('require-phone').checked
-                },
+                requiredFields: { name: true, email: true },
                 timeLimit: document.getElementById('enable-time-limit').checked ? parseInt(document.getElementById('time-limit').value) : null,
-                difficulty: document.getElementById('difficulty').value,
                 passingScore: parseInt(document.getElementById('passing-score').value),
                 settings: {
                     shuffleQuestions: document.getElementById('shuffle-questions').checked,
                     showAnswers: document.getElementById('show-answers').checked
                 },
+                antiCheatSettings: {
+                    aiCamera: document.getElementById('ac-camera').checked,
+                    tabSwitch: document.getElementById('ac-tab').checked,
+                    copyPaste: document.getElementById('ac-copy').checked
+                },
                 questions: []
             };
 
-            // Parse Questions
             questionsUI.forEach((card, idx) => {
-                const qNum = idx + 1;
-                // Since IDs might be disjointed due to deletions, we scope queries to the card
                 const type = card.querySelector('select').value;
                 const text = card.querySelector('textarea').value.trim();
                 const marks = parseFloat(card.querySelector('.marks-input input').value) || 1;
@@ -442,56 +639,39 @@
                 if (type === 'single' || type === 'multiple') {
                     const optionRows = card.querySelectorAll('.option-row');
                     let hasCorrect = false;
-
                     optionRows.forEach(row => {
                         const optText = row.querySelector('input[type="text"]').value.trim();
                         const isCorrect = row.querySelector('input[type="radio"], input[type="checkbox"]').checked;
                         if(isCorrect) hasCorrect = true;
-
                         questionObj.options.push({ text: optText, isCorrect });
                     });
-
-                    if (!hasCorrect) throw new Error(`Question ${qNum} needs at least one correct option selected.`);
+                    if (!hasCorrect) throw new Error(`Question ${idx+1} needs a correct option selected.`);
                 } else {
                     const exactAns = card.querySelector('.options-container input[type="text"]').value.trim();
                     questionObj.correctAnswer = exactAns;
                 }
-
                 payload.questions.push(questionObj);
             });
 
-            // Send to Backend
             const res = await fetch(`${API_BASE_URL}/create-quiz`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify(payload)
             });
 
-            if (!res.ok) {
-                const errData = await res.json();
-                throw new Error(errData.error || 'Failed to create quiz');
-            }
-
-            formChanged = false; // allow redirect
+            if (!res.ok) throw new Error('Failed to create quiz');
             showToast('Quiz Published Successfully!');
             setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
 
         } catch (error) {
             console.error(error);
             showToast(error.message, 'error');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Publish Quiz';
+            submitBtn.disabled = false; submitBtn.innerHTML = '<i class="bi bi-check2-circle"></i> Publish Quiz';
         }
     });
 
-    // Initialize with one question
-    document.addEventListener('DOMContentLoaded', () => {
-        addQuestion();
-    });
-
+    // Initialize with one empty question
+    document.addEventListener('DOMContentLoaded', () => { addQuestion(); });
   </script>
 </body>
 </html>
