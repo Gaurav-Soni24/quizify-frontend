@@ -2,739 +2,589 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Attempt Quiz - Quizify Secure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiz Submissions - Quizify Secure</title>
   
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+  <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dom-to-image/2.6.0/dom-to-image.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
   <style>
     /* --- CSS Variables --- */
     :root {
-      --bg-color: #f3f4f6;
+      --bg-color: #f9fafb;
       --surface-color: #ffffff;
       --text-main: #111827;
       --text-muted: #6b7280;
       --border-color: #e5e7eb;
       --primary-purple: #5542F6;
       --primary-hover: #4836d4;
-      --warning-yellow: #f59e0b;
+      --primary-orange: #f59e0b;
       --danger-red: #ef4444;
+      --warning-yellow: #f59e0b;
       --success-green: #10b981;
+      --sidebar-width: 260px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR --- */
+    .sidebar { width: var(--sidebar-width); background-color: var(--surface-color); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 24px 16px; overflow-y: auto; z-index: 1000; transition: transform 0.3s ease; }
+    .brand { display: flex; align-items: center; gap: 12px; font-weight: 800; font-size: 1.25rem; color: var(--primary-purple); margin-bottom: 32px; padding: 0 8px; text-decoration: none; }
     
-    body { 
-        background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; 
-        display: flex; justify-content: center; align-items: center; min-height: 100vh; min-height: 100dvh; padding: 20px;
-        -webkit-user-select: none; -ms-user-select: none; user-select: none;
+    .btn-quick-create { background-color: var(--primary-purple); color: white; text-decoration: none; border: none; padding: 12px 16px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; margin-bottom: 24px; width: 100%; transition: all 0.2s; }
+    .btn-quick-create:hover { background-color: var(--primary-hover); }
+
+    .nav-section { margin-bottom: 24px; }
+    .nav-section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; padding: 0 8px; letter-spacing: 0.05em; }
+    .nav-item { display: flex; align-items: center; padding: 10px 12px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; margin-bottom: 4px; transition: all 0.2s; cursor: pointer; }
+    .nav-item i { margin-right: 12px; font-size: 1.1rem; }
+    .nav-item:hover { background-color: #f3f4f6; color: var(--text-main); }
+    .nav-item.active { background-color: var(--primary-orange); color: white; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+    .top-header { min-height: 70px; background-color: var(--surface-color); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 32px; position: sticky; top: 0; z-index: 100; }
+    .hamburger { display: none; cursor: pointer; font-size: 1.5rem; color: var(--text-main); }
+    .header-actions { display: flex; align-items: center; gap: 20px; color: var(--text-muted); margin-left: auto; }
+    .header-actions i { font-size: 1.2rem; cursor: pointer; }
+    .avatar { width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-muted); }
+
+    .content-wrapper { padding: 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+    
+    .dashboard-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; flex-wrap: wrap; gap: 16px;}
+    .dashboard-header h1 { font-size: 1.8rem; color: var(--text-main); margin-bottom: 8px; font-weight: 700;}
+    .dashboard-header p { color: var(--text-muted); font-size: 1rem; }
+    .header-buttons { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .btn-action { padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--surface-color); color: var(--text-main); border-color: var(--border-color); box-shadow: 0 1px 2px rgba(0,0,0,0.05);}
+    .btn-action:hover { background-color: #f3f4f6; }
+    .btn-primary { background-color: var(--primary-purple); color: white; border-color: var(--primary-purple); }
+    .btn-primary:hover { background-color: var(--primary-hover); color: white; }
+
+    /* Analytics Cards */
+    .analytics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    .stat-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .stat-card h3 { font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; font-weight: 600;}
+    .stat-card .value { font-size: 2rem; color: var(--text-main); font-weight: 700; }
+    .stat-card.flagged .value { color: var(--danger-red); }
+
+    /* Charts */
+    .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px; }
+    .chart-card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); height: 400px; position: relative;}
+    .chart-card h3 { font-size: 1.1rem; color: var(--text-main); margin-bottom: 16px; font-weight: 600; }
+    .chart-container { position: relative; height: 300px; width: 100%; }
+
+    /* Table */
+    .card { background-color: var(--surface-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .card h2 { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); font-weight: 600; }
+    .table-container { overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+    table { width: 100%; border-collapse: collapse; text-align: left; min-width: 600px; }
+    th { padding: 12px 16px; color: var(--text-muted); font-weight: 600; font-size: 0.85rem; text-transform: uppercase; border-bottom: 1px solid var(--border-color); background-color: #f9fafb; white-space: nowrap; }
+    td { padding: 16px; border-bottom: 1px solid var(--border-color); color: var(--text-main); font-size: 0.95rem; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    .main-row:hover td { background-color: #f9fafb; cursor: pointer; }
+
+    /* Status Badges */
+    .status-badge { padding: 6px 12px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;}
+    .status-clean { background-color: #d1fae5; color: #065f46; }
+    .status-warn { background-color: #fef3c7; color: #92400e; }
+    .status-danger { background-color: #fee2e2; color: #991b1b; }
+
+    /* Expandable Details */
+    .details-row { display: none; background-color: #f9fafb; }
+    .details-row.show { display: table-row; }
+    .details-content { padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); background: white; margin: 8px; }
+    .details-content h5 { margin-bottom: 12px; font-size: 1rem; color: var(--primary-purple); }
+    
+    .anti-cheat-info { background: #fef2f2; padding: 16px; border-radius: 8px; border: 1px solid #fecaca; margin-bottom: 20px; }
+    .anti-cheat-info p { margin-bottom: 8px; color: #991b1b; font-size: 1rem; font-weight: 600;}
+    .anti-cheat-list { margin-left: 20px; font-size: 0.9rem; color: #7f1d1d; }
+    .anti-cheat-list li { margin-bottom: 4px; }
+    .ac-alert-text { color: var(--danger-red); font-weight: 700; }
+
+    .question-breakdown { list-style: none; }
+    .question-breakdown li { padding: 16px 0; border-bottom: 1px dashed var(--border-color); }
+    .question-breakdown li:last-child { border-bottom: none; padding-bottom: 0; }
+    .q-text { font-weight: 600; margin-bottom: 8px; }
+    .q-ans { font-size: 0.95rem; color: var(--text-main); background: #f9fafb; padding: 14px; border-radius: 8px; border: 1px solid var(--border-color);}
+    
+    .q-correct { color: var(--success-green); font-weight: 600; }
+    .q-partial { color: var(--warning-yellow); font-weight: 600; }
+    .q-incorrect { color: var(--danger-red); font-weight: 600; }
+
+    /* AI Feedback Box */
+    .ai-feedback-box { background-color: #f3e8ff; border: 1px solid #d8b4fe; padding: 12px; border-radius: 8px; margin-top: 12px; color: #6b21a8; font-size: 0.9rem; line-height: 1.5;}
+    .ai-feedback-box i { font-size: 1.1rem; margin-right: 6px; }
+
+    .loading-state { text-align: center; padding: 40px; color: var(--text-muted); }
+    .dashboard-footer { padding: 24px 32px; text-align: center; color: var(--text-muted); font-size: 0.85rem; border-top: 1px solid var(--border-color); margin-top: auto; }
+
+    /* Code Block Formatting */
+    pre.code-preview { background:#1e293b; color:#f8fafc; padding:12px; border-radius:6px; overflow-x:auto; margin-top: 4px; font-family: monospace; font-size: 0.9rem; }
+
+    /* --- Responsive Mobile Tweaks --- */
+    @media screen and (max-width: 992px) {
+      .hamburger { display: block; }
+      .sidebar { position: fixed; left: -100%; top: 0; bottom: 0; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+      .sidebar.active { left: 0; }
+      .header-actions { margin-left: auto; }
     }
 
-    input[type="text"], input[type="number"], textarea {
-        -webkit-user-select: text; -ms-user-select: text; user-select: text;
+    @media screen and (max-width: 768px) {
+      .top-header { padding: 0 20px; }
+      .content-wrapper { padding: 20px 16px; }
+      .dashboard-header h1 { font-size: 1.5rem; }
+      .header-buttons { width: 100%; }
+      .header-buttons .btn-action { flex: 1; }
+      
+      .analytics-grid { grid-template-columns: 1fr 1fr; gap: 16px; }
+      .stat-card { padding: 16px; }
+      .stat-card .value { font-size: 1.5rem; }
+      
+      .charts-grid { grid-template-columns: 1fr; }
+      .chart-card { height: 350px; padding: 16px;}
+      .chart-container { height: 250px; }
+
+      .card { padding: 16px; }
+      td { padding: 12px 10px; font-size: 0.85rem; }
+      .btn-action { padding: 8px 12px; font-size: 0.8rem; }
+      
+      .details-content { padding: 12px; margin: 4px; }
     }
 
-    /* --- Containers & Cards --- */
-    .container { width: 100%; max-width: 1000px; margin: auto; }
-    .card { background: var(--surface-color); border-radius: 16px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px; animation: fadeIn 0.4s ease-out;}
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-    h1, h2, h3 { color: var(--text-main); font-weight: 700; }
-    .section-header { text-align: center; margin-bottom: 32px; border-bottom: 1px solid var(--border-color); padding-bottom: 24px; }
-    .section-header h1 { font-size: 2rem; color: var(--primary-purple); margin-bottom: 8px;}
-    .section-header p { color: var(--text-muted); font-size: 1.1rem; }
-
-    /* --- Forms & Buttons --- */
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
-    input.form-control, textarea.form-control { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
-    textarea.code-input { font-family: monospace; background-color: #1e293b; color: #f8fafc; border-color: #334155; }
-    input.form-control:focus, textarea.form-control:focus { outline: none; border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
-
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background-color: var(--primary-purple); color: white; }
-    .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
-    .btn-primary:disabled { background-color: #a78bfa; cursor: not-allowed; transform: none; }
-    .btn-success { background-color: var(--success-green); color: white; }
-
-    .instructions-box { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
-    .instructions-box li { position: relative; padding-left: 24px; margin-bottom: 12px; color: #1e3a8a; font-weight: 500; list-style: none;}
-    .instructions-box li::before { content: "•"; position: absolute; left: 8px; color: #3b82f6; font-size: 1.5rem; top: -4px; }
-    
-    .anti-cheat-warning { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #991b1b; }
-    .anti-cheat-warning h4 { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
-
-    /* --- Quiz Layout --- */
-    .quiz-layout { display: flex; gap: 24px; align-items: flex-start; }
-    
-    .question-palette { width: 280px; background: var(--surface-color); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); position: sticky; top: 20px;}
-    .palette-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(44px, 1fr)); gap: 8px; margin-top: 16px; margin-bottom: 24px;}
-    .palette-btn { width: 100%; aspect-ratio: 1; border: 2px solid var(--border-color); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-    .palette-btn.active { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.2); }
-    .palette-btn.answered { background: var(--success-green); color: white; border-color: var(--success-green); }
-    
-    .question-area { flex: 1; width: 100%; }
-    .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
-    .question-card.active { display: block; animation: fadeIn 0.3s ease; }
-    
-    .q-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--border-color);}
-    .q-number { font-size: 1.2rem; font-weight: 700; color: var(--primary-purple); }
-    .q-text { font-size: 1.15rem; color: var(--text-main); margin-bottom: 24px; font-weight: 500; line-height: 1.6;}
-
-    .options-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 32px;}
-    .option-label { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f9fafb; font-size: 1.05rem;}
-    .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
-    .option-label input { width: 22px; height: 22px; accent-color: var(--primary-purple); flex-shrink: 0;}
-
-    /* Desktop Nav Buttons */
-    .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
-    .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
-    .btn-nav:hover:not(:disabled) { background: #e5e7eb; }
-    .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
-
-    /* --- Widgets --- */
-    .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000;}
-    .webcam-container { position: fixed; bottom: 20px; right: 20px; width: 180px; height: 135px; background: #000; border-radius: 12px; overflow: hidden; border: 3px solid var(--success-green); box-shadow: 0 10px 25px rgba(0,0,0,0.2); z-index: 1000; display: none; }
-    .webcam-container.warning { border-color: var(--warning-yellow); }
-    #webcam-video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    .webcam-overlay { position: absolute; bottom: 4px; left: 0; width: 100%; text-align: center; color: white; font-size: 0.75rem; font-weight: 600; text-shadow: 1px 1px 2px black;}
-
-    /* --- Modals & Overlays --- */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s;}
-    .modal-overlay.show { opacity: 1; pointer-events: auto; }
-    .modal-content { background: white; padding: 40px; border-radius: 16px; max-width: 450px; text-align: center; transform: scale(0.9); transition: transform 0.3s; width: 90%;}
-    .modal-overlay.show .modal-content { transform: scale(1); }
-    
-    .ai-loader-container { display: flex; flex-direction: column; align-items: center; gap: 16px; }
-    .ai-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #a855f7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-    /* Mobile UX Overhaul */
-    .mobile-bottom-nav { display: none; }
-    .palette-overlay-mobile { display: none; }
-
-    @media (max-width: 768px) {
-      body { padding: 0; align-items: flex-start; }
-      .card { padding: 24px 20px; margin-bottom: 0; border-radius: 0; min-height: 100dvh; box-shadow: none; border-bottom: 1px solid var(--border-color); }
-      .question-card { padding: 20px; border-radius: 0; border: none; box-shadow: none; min-height: 100dvh; padding-bottom: 100px; padding-top: 70px;}
-      .nav-buttons { display: none; }
-
-      .timer-widget { 
-          top: 0; right: 0; left: 0; border-radius: 0; border: none; border-bottom: 1px solid var(--border-color);
-          justify-content: center; font-size: 1.1rem; padding: 12px; box-shadow: none; z-index: 900; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px);
-      }
-      
-      .webcam-container { 
-          top: 50px; bottom: auto; right: 16px; left: auto; 
-          width: 80px; height: 106px; border-width: 2px; border-radius: 8px; z-index: 950;
-      }
-
-      .mobile-bottom-nav {
-          display: flex; position: fixed; bottom: 0; left: 0; right: 0;
-          background: var(--surface-color); border-top: 1px solid var(--border-color);
-          padding: 12px 20px; justify-content: space-between; align-items: center;
-          z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding-bottom: calc(12px + env(safe-area-inset-bottom));
-      }
-      .mob-nav-btn {
-          background: #f3f4f6; border: none; border-radius: 50%; width: 44px; height: 44px;
-          display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-main); cursor: pointer; transition: background 0.2s;
-      }
-      .mob-nav-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-      
-      .mob-palette-btn {
-          background: var(--primary-purple); color: white; border: none; border-radius: 24px;
-          padding: 10px 24px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.3); cursor: pointer;
-      }
-
-      .quiz-layout { display: block; }
-      .question-palette {
-          position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100dvh;
-          z-index: 3000; margin: 0; border-radius: 0; border-right: 1px solid var(--border-color);
-          box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          overflow-y: auto; padding: 24px 20px;
-      }
-      .question-palette.open { left: 0; }
-      
-      .palette-header-mobile {
-          display: flex !important; justify-content: space-between; align-items: center; 
-          margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;
-      }
-      .close-palette-btn { background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;}
-
-      .palette-overlay-mobile {
-          display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-          background: rgba(0,0,0,0.5); z-index: 2500; backdrop-filter: blur(2px);
-      }
-      .palette-overlay-mobile.show { display: block; }
+    @media screen and (max-width: 480px) {
+      .analytics-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
 
-  <div id="g_id_onload"
-       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
-       data-context="signin"
-       data-ux_mode="popup"
-       data-callback="handleGoogleLogin"
-       data-auto_prompt="false">
-  </div>
+  <aside class="sidebar" id="sidebar">
+    <a href="/pages/dashboard/dashboard.html" class="brand"><img src="./../../images/svg/logo.svg" alt="QuizGrad Logo" /></a>
+    <a href="/pages/dashboard/createQuiz/createQuiz.html" class="btn-quick-create"><i class="bi bi-plus-circle"></i> Create New Quiz</a>
 
-  <div class="container">
-    
-    <div id="error-state" class="card" style="display: none; text-align: center;">
-        <i class="bi bi-x-octagon-fill" style="font-size: 3rem; color: var(--danger-red); margin-bottom: 16px; display: block;"></i>
-        <h2 id="error-title">Access Denied</h2>
-        <p id="error-msg" style="color: var(--text-muted); margin-top: 12px;"></p>
+    <div class="nav-section">
+      <div class="nav-section-title">Menu</div>
+      <a href="/pages/dashboard/dashboard.html" class="nav-item"><div><i class="bi bi-grid"></i> Dashboard</div></a>
+      <a href="/dashboard/myquiz" class="nav-item active"><div><i class="bi bi-journal-check"></i> My Quizzes</div></a>
+      <a href="#" class="nav-item"><div><i class="bi bi-person"></i> Profile</div></a>
     </div>
 
-    <div id="section-1" class="card">
-      <div class="section-header">
-        <h1 id="intro-title">Loading Quiz...</h1>
-        <p id="intro-desc">Please wait while we set things up.</p>
+    <div class="nav-section" style="margin-top: auto;">
+      <a href="#" id="logout-button" class="nav-item"><div><i class="bi bi-box-arrow-left"></i> Logout</div></a>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="top-header">
+      <div class="hamburger" id="hamburger"><i class="bi bi-list"></i></div>
+      <div class="header-actions">
+        <i class="bi bi-bell"></i>
+        <div class="avatar"><i class="bi bi-person-fill"></i></div>
       </div>
-      
-      <div id="auth-container" style="display: none; text-align: center;">
-        <h3>Student Verification</h3>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Sign in with your Google account. Do not reload the page after starting.</p>
-        <div style="display: flex; justify-content: center;">
-            <div class="g_id_signin" data-type="standard"></div>
+    </header>
+
+    <div class="content-wrapper" id="capture-area">
+      <div class="dashboard-header">
+        <div>
+          <h1 id="quiz-title">Loading Quiz Details...</h1>
+          <p>Submission analytics, AI auto-grading results, and anti-cheat reports.</p>
+        </div>
+        <div class="header-buttons">
+          <button class="btn-action" onclick="downloadAnalyticsXLSX()"><i class="bi bi-file-earmark-excel"></i> Export Data</button>
+          <button class="btn-action btn-primary" onclick="downloadReportImage()"><i class="bi bi-image"></i> Save Report</button>
+        </div>
+      </div>
+
+      <div class="analytics-grid">
+        <div class="stat-card">
+          <h3>Total Submissions</h3>
+          <div class="value" id="stat-total">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Average Score</h3>
+          <div class="value" id="stat-avg">0%</div>
+        </div>
+        <div class="stat-card">
+          <h3>Pass Rate</h3>
+          <div class="value" id="stat-pass">0%</div>
+        </div>
+        <div class="stat-card flagged">
+          <h3>Flagged (Violations)</h3>
+          <div class="value" id="stat-flagged">0</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>Score Distribution</h3>
+          <div class="chart-container"><canvas id="scoreChart"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <h3>Performance Timeline</h3>
+          <div class="chart-container"><canvas id="timelineChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2><i class="bi bi-people"></i> Student Submissions</h2>
+        <div class="table-container">
+          <table id="submissions-table">
+            <thead>
+              <tr>
+                <th>Student Details</th>
+                <th>Submitted At</th>
+                <th>Score</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="submissions-body">
+              <tr><td colspan="5" class="loading-state">Loading submissions...</td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <div id="section-2" class="card" style="display: none;">
-      <div class="section-header">
-        <h1>Quiz Instructions</h1>
-        <p>Please read carefully before starting.</p>
-      </div>
-      
-      <div class="anti-cheat-warning" id="ac-warning-box" style="display: none;">
-        <h4><i class="bi bi-shield-lock-fill"></i> Monitored Exam</h4>
-        <ul id="ac-rules-list" style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
-            </ul>
-        <p style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">Violations will severely flag your submission for the instructor.</p>
-      </div>
-
-      <div class="instructions-box" id="instructions-container"></div>
-
-      <div style="text-align: center; margin-bottom: 24px;" id="cam-init-box">
-          <button id="btn-enable-cam" class="btn" style="background: #e5e7eb; color: var(--text-main);">
-              <i class="bi bi-camera-video-fill"></i> Enable Webcam to Proceed
-          </button>
-          <p id="cam-status" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 8px;"></p>
-      </div>
-
-      <button id="start-quiz-btn" class="btn btn-primary" disabled>
-        <i class="bi bi-play-circle-fill"></i> Start Quiz Now
-      </button>
-    </div>
-
-    <div id="section-3" style="display: none;">
-      
-      <div class="palette-overlay-mobile" id="mobile-palette-overlay"></div>
-
-      <div id="timer" class="timer-widget" style="display: none;">
-        <i class="bi bi-stopwatch"></i> <span id="time-display">--:--</span>
-      </div>
-
-      <div class="webcam-container" id="webcam-container">
-          <video id="webcam-video" autoplay muted playsinline></video>
-          <div class="webcam-overlay" id="webcam-overlay-text">AI Monitoring</div>
-      </div>
-
-      <div class="quiz-layout">
-        <aside class="question-palette" id="question-palette">
-          <div class="palette-header-mobile" style="display: none;">
-              <h3 style="margin:0;">Questions</h3>
-              <button class="close-palette-btn" id="close-palette-btn"><i class="bi bi-x-lg"></i></button>
-          </div>
-          <h3 class="desktop-palette-title">Question Palette</h3>
-          
-          <div class="palette-grid" id="palette-grid"></div>
-          
-          <button id="btn-final-submit" class="btn btn-success" style="margin-top: 32px; width: 100%;">
-            <i class="bi bi-check2-all"></i> Submit Quiz
-          </button>
-        </aside>
-
-        <main class="question-area" id="question-area"></main>
-
-        <div class="mobile-bottom-nav" id="mobile-nav">
-            <button class="mob-nav-btn" id="mob-prev" onclick="navQuestionMobile(-1)"><i class="bi bi-chevron-left"></i></button>
-            <button class="mob-palette-btn" id="mobile-palette-toggle">
-                <i class="bi bi-grid-3x3-gap-fill"></i> <span id="mob-q-counter">1/10</span>
-            </button>
-            <button class="mob-nav-btn" id="mob-next" onclick="navQuestionMobile(1)"><i class="bi bi-chevron-right"></i></button>
-        </div>
-      </div>
-    </div>
-
-    <div id="section-4" class="card" style="display: none; text-align: center;">
-        <h1 style="margin-bottom: 8px;">Submission Received</h1>
-        <p style="color: var(--text-muted); margin-bottom: 32px;">Your quiz has been successfully recorded.</p>
-        
-        <div style="font-size: 3rem; font-weight: 800; color: var(--primary-purple); margin-bottom: 16px;" id="res-percentage">0%</div>
-        <div id="res-fraction" style="font-weight: 600; color: var(--text-muted);">0 / 0 Marks</div>
-        <p style="margin-top: 16px; font-size: 0.9rem;" id="ai-grade-note"></p>
-    </div>
-
-  </div>
-
-  <div class="modal-overlay" id="warning-modal">
-    <div class="modal-content">
-      <i class="bi bi-exclamation-triangle-fill" style="font-size: 3rem; color: var(--warning-yellow);"></i>
-      <h3 id="warning-title">Warning!</h3>
-      <p id="warning-desc" style="margin: 16px 0;"></p>
-      <button class="btn btn-primary" onclick="closeWarningModal()">I Understand</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="submitting-modal">
-    <div class="modal-content ai-loader-container">
-      <div class="ai-spinner"></div>
-      <h3>Evaluating Answers...</h3>
-      <p style="color: var(--text-muted);">AI is currently grading your text and coding submissions. Please do not close the window.</p>
-    </div>
-  </div>
+    <footer class="dashboard-footer">&copy; 2026 Quizify. All rights reserved.</footer>
+  </main>
 
   <script>
     const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
+    const token = localStorage.getItem("token");
     const urlParams = new URLSearchParams(window.location.search);
-    const quizId = urlParams.get("id");
+    const quizId = urlParams.get('quizId');
 
-    let quizData = null;
-    let userDetails = {};
-    let currentQuestionIndex = 0;
-    
-    // Anti-Cheat State
-    let isFlagged = false;
-    let tabSwitchCount = 0;
-    let webcamStrikes = 0;
-    let copyPasteAttempts = 0;
-    let isQuizActive = false;
-    let hasAiCamera = false;
-    let hasTabCheck = false;
-    let hasCopyCheck = false;
+    let globalSubmissions = [];
+    let globalQuizData = null;
 
-    // AI Tracking State
-    let videoEl = document.getElementById('webcam-video');
-    let faceDetectionInterval = null;
-    let modelsLoaded = false;
-    let noFaceFrames = 0; 
-    let timerInterval = null;
-
-    // Element Refs
-    const s1 = document.getElementById('section-1');
-    const s2 = document.getElementById('section-2');
-    const s3 = document.getElementById('section-3');
-    const s4 = document.getElementById('section-4');
-
-    // Mobile Palette Toggle
-    const mobileToggle = document.getElementById('mobile-palette-toggle');
-    const mobileOverlay = document.getElementById('mobile-palette-overlay');
-    const paletteMenu = document.getElementById('question-palette');
-    const closePaletteBtn = document.getElementById('close-palette-btn');
-
-    if (mobileToggle) mobileToggle.addEventListener('click', () => { paletteMenu.classList.add('open'); mobileOverlay.classList.add('show'); });
-    if (closePaletteBtn) closePaletteBtn.addEventListener('click', () => { paletteMenu.classList.remove('open'); mobileOverlay.classList.remove('show'); });
-    if (mobileOverlay) mobileOverlay.addEventListener('click', () => { paletteMenu.classList.remove('open'); mobileOverlay.classList.remove('show'); });
-
-    if (window.innerWidth <= 768) {
-        document.querySelector('.desktop-palette-title').style.display = 'none';
-        document.querySelector('.palette-header-mobile').style.display = 'flex';
+    if (!token) window.location.href = "/login";
+    if (!quizId) {
+        alert("No Quiz ID provided.");
+        window.location.href = "/pages/dashboard/dashboard.html";
     }
 
+    // Escape HTML logic for displaying user code securely
+    function escapeHtml(unsafe) {
+        if(!unsafe) return '';
+        return unsafe.toString()
+             .replace(/&/g, "&amp;")
+             .replace(/</g, "&lt;")
+             .replace(/>/g, "&gt;")
+             .replace(/"/g, "&quot;")
+             .replace(/'/g, "&#039;");
+    }
+
+    // --- Initialization ---
     async function init() {
-        if (!quizId) return showError("Invalid Link", "No Quiz ID was provided in the URL.");
-        try {
-            const res = await axios.get(`${API_BASE_URL}/public-quiz/${quizId}`);
-            quizData = res.data.quiz;
-            quizData.shuffledQuestions = quizData.settings?.shuffleQuestions 
-                ? [...quizData.questions].sort(() => Math.random() - 0.5).map((q, i) => ({...q, originalIndex: quizData.questions.indexOf(q)}))
-                : quizData.questions.map((q, i) => ({...q, originalIndex: i}));
-
-            document.getElementById('intro-title').textContent = quizData.title;
-            document.getElementById('intro-desc').textContent = quizData.description;
-            document.getElementById('auth-container').style.display = 'block';
-
-            // Preload models if camera is required
-            if (quizData.antiCheatSettings && quizData.antiCheatSettings.aiCamera) {
-                loadFaceAPIModels();
-            }
-        } catch (error) {
-            showError("Quiz Not Found", "The quiz does not exist or is private.");
-        }
-    }
-
-    function showError(title, msg) {
-        s1.style.display = 'none'; s2.style.display = 'none'; s3.style.display = 'none';
-        document.getElementById('error-state').style.display = 'block';
-        document.getElementById('error-title').textContent = title;
-        document.getElementById('error-msg').textContent = msg;
-    }
-
-    async function handleGoogleLogin(response) {
-        try {
-            const res = await axios.post(`${API_BASE_URL}/verify-google-attempt`, { quizId, credential: response.credential });
-            userDetails.email = res.data.email;
-            userDetails.name = res.data.name;
-            
-            s1.style.display = 'none';
-            buildInstructions();
-            s2.style.display = 'block';
-        } catch (error) {
-            showError("Access Denied", error.response?.data?.error || "Authentication failed. You may have already taken or abandoned this quiz.");
-        }
-    }
-
-    async function loadFaceAPIModels() {
-        try {
-            const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'; 
-            await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-            ]);
-            modelsLoaded = true;
-            checkReadyState();
-        } catch(e) {
-            console.error(e);
-            document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Failed to load AI models.</span>`;
-        }
-    }
-
-    function buildInstructions() {
-        const settings = quizData.antiCheatSettings || {};
-        hasAiCamera = !!settings.aiCamera;
-        hasTabCheck = !!settings.tabSwitch;
-        hasCopyCheck = !!settings.copyPaste;
-
-        // General Instructions
-        const container = document.getElementById('instructions-container');
-        let infoHtml = `<ul>
-            <li><strong>Total Marks:</strong> ${quizData.questions.reduce((sum, q) => sum + q.marks, 0)}</li>
-            <li><strong>Passing Score:</strong> ${quizData.passingScore}%</li>
-        `;
-        if(quizData.timeLimit) infoHtml += `<li><strong>Time Limit:</strong> ${quizData.timeLimit} Minutes</li>`;
-        infoHtml += `</ul>`;
-        container.innerHTML = infoHtml;
-
-        // Setup Anti-Cheat UI rules
-        const acBox = document.getElementById('ac-warning-box');
-        const acList = document.getElementById('ac-rules-list');
-        let rulesHtml = '';
-
-        if(hasAiCamera) rulesHtml += `<li><strong>AI Face Tracking:</strong> Your camera must remain on. Looking away flags the attempt.</li>`;
-        if(hasTabCheck) rulesHtml += `<li><strong>Tab Lock:</strong> Leaving the quiz tab will be recorded.</li>`;
-        if(hasCopyCheck) rulesHtml += `<li><strong>No Copy/Paste:</strong> Clipboard actions and right-clicking are disabled.</li>`;
-
-        if (rulesHtml) {
-            acBox.style.display = 'block';
-            acList.innerHTML = rulesHtml;
+      try {
+        // 1. Fetch Quiz Details
+        const quizRes = await fetch(`${API_BASE_URL}/public-quiz/${quizId}`);
+        if(quizRes.ok) {
+            const quizData = await quizRes.json();
+            globalQuizData = quizData.quiz;
+            document.getElementById('quiz-title').textContent = globalQuizData.title + " Submissions";
         }
 
-        // Setup Cam button logic
-        if (hasAiCamera) {
-            document.getElementById('btn-enable-cam').addEventListener('click', async () => {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
-                    videoEl.srcObject = stream;
-                    document.getElementById('btn-enable-cam').style.display = 'none';
-                    checkReadyState();
-                } catch (err) {
-                    document.getElementById('cam-status').innerHTML = `<span style="color:var(--danger-red);">Camera access required to proceed.</span>`;
-                }
-            });
-        } else {
-            document.getElementById('cam-init-box').style.display = 'none';
-            document.getElementById('start-quiz-btn').disabled = false;
+        // 2. Fetch Submissions
+        const subRes = await fetch(`${API_BASE_URL}/quiz-submissions/${quizId}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!subRes.ok) {
+            if(subRes.status === 404) throw new Error("No submissions found for this quiz.");
+            throw new Error("Failed to load submissions.");
         }
 
-        document.getElementById('start-quiz-btn').addEventListener('click', startQuizLock);
-    }
-
-    function checkReadyState() {
-        if (!hasAiCamera) { document.getElementById('start-quiz-btn').disabled = false; return; }
-        if (modelsLoaded && videoEl.srcObject) {
-            document.getElementById('cam-status').innerHTML = `<i class="bi bi-shield-check" style="color:var(--primary-purple);"></i> AI Engine Ready.`;
-            document.getElementById('start-quiz-btn').disabled = false;
-        }
-    }
-
-    // Locks the attempt in the database to prevent reload cheating
-    async function startQuizLock() {
-        const btn = document.getElementById('start-quiz-btn');
-        btn.disabled = true;
-        btn.textContent = "Locking Session...";
-
-        try {
-            await axios.post(`${API_BASE_URL}/start-attempt`, { quizId, email: userDetails.email });
-            launchQuizInterface();
-        } catch (error) {
-            showError("Session Error", "Could not lock session. You might have already started this quiz.");
-        }
-    }
-
-    function launchQuizInterface() {
-        s2.style.display = 'none';
-        s3.style.display = 'block';
-        isQuizActive = true;
-
-        if (quizData.timeLimit) startTimer(quizData.timeLimit);
-        if (hasAiCamera) startFaceDetection();
-        if (hasTabCheck) enableTabTracking();
-        if (hasCopyCheck) enableCopyTracking();
+        const subData = await subRes.json();
+        globalSubmissions = subData.submissions || [];
         
-        buildPalette();
-        buildQuestions();
-        showQuestion(0);
+        if(globalSubmissions.length === 0) throw new Error("No submissions found for this quiz.");
 
-        try { document.documentElement.requestFullscreen(); } catch(e){}
+        renderAnalytics();
+        renderCharts();
+        renderTable();
+
+      } catch (error) {
+        document.getElementById('submissions-body').innerHTML = `<tr><td colspan="5" class="loading-state">${error.message}</td></tr>`;
+        document.getElementById('quiz-title').textContent = "Submissions";
+      }
     }
 
-    // ==========================================
-    // ANTI-CHEAT ENGINE
-    // ==========================================
-    function startFaceDetection() {
-        document.getElementById('webcam-container').style.display = 'block';
-        
-        faceDetectionInterval = setInterval(async () => {
-            if(!isQuizActive) return;
-            const detections = await faceapi.detectAllFaces(videoEl, new faceapi.TinyFaceDetectorOptions());
-            const overlayText = document.getElementById('webcam-overlay-text');
-            const webcamContainer = document.getElementById('webcam-container');
+    // --- Analytics & Charts ---
+    function renderAnalytics() {
+        const total = globalSubmissions.length;
+        if(total === 0) return;
+
+        const passingScore = globalQuizData?.passingScore || 60;
+        let sumPercentage = 0;
+        let passCount = 0;
+        let flaggedCount = 0;
+
+        globalSubmissions.forEach(sub => {
+            sumPercentage += sub.score.percentage;
+            if(sub.score.percentage >= passingScore) passCount++;
             
-            if (detections.length !== 1) {
-                noFaceFrames++;
-                webcamContainer.classList.add('warning');
-                overlayText.textContent = detections.length === 0 ? "FACE NOT DETECTED" : "MULTIPLE FACES";
-                overlayText.style.color = "var(--danger-red)";
-                
-                if (noFaceFrames >= 5) {
-                    triggerStrike("Camera Violation", "Ensure only your face is clearly visible to the camera.");
-                    noFaceFrames = 0; 
-                }
-            } else {
-                noFaceFrames = 0;
-                webcamContainer.classList.remove('warning');
-                overlayText.textContent = "AI Monitoring";
-                overlayText.style.color = "white";
+            // Comprehensive Anti-Cheat Check
+            if(sub.antiCheat && (
+                sub.antiCheat.wasAutoSubmitted || 
+                sub.antiCheat.tabSwitches > 0 || 
+                sub.antiCheat.webcamStrikes > 0 || 
+                sub.antiCheat.copyPasteAttempts > 0 || 
+                sub.antiCheat.identitySwapDetected
+            )) {
+                flaggedCount++;
             }
-        }, 1000); 
+        });
+
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-avg').textContent = (sumPercentage / total).toFixed(1) + "%";
+        document.getElementById('stat-pass').textContent = ((passCount / total) * 100).toFixed(1) + "%";
+        document.getElementById('stat-flagged').textContent = flaggedCount;
     }
 
-    function enableTabTracking() {
-        document.addEventListener("visibilitychange", () => {
-            if(document.hidden && isQuizActive) {
-                triggerStrike("Tab Switch Detected", "You minimized the browser or switched tabs.");
-                tabSwitchCount++;
+    function renderCharts() {
+        if(globalSubmissions.length === 0) return;
+
+        const passingScore = globalQuizData?.passingScore || 60;
+        
+        let failed = 0, passed = 0, excellent = 0;
+        globalSubmissions.forEach(s => {
+            if(s.score.percentage < passingScore) failed++;
+            else if(s.score.percentage < 80) passed++;
+            else excellent++;
+        });
+
+        new Chart(document.getElementById('scoreChart'), {
+            type: 'doughnut',
+            data: {
+                labels: [`Failed (<${passingScore}%)`, `Passed (${passingScore}-79%)`, 'Excellent (≥80%)'],
+                datasets: [{
+                    data: [failed, passed, excellent],
+                    backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+                    borderWidth: 0
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        const timelineData = globalSubmissions.map(s => ({
+            x: new Date(s.submittedAt),
+            y: s.score.percentage
+        })).sort((a, b) => a.x - b.x);
+
+        new Chart(document.getElementById('timelineChart'), {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'Score (%)',
+                    data: timelineData,
+                    borderColor: '#5542F6',
+                    backgroundColor: 'rgba(85, 66, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: { 
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { type: 'time', time: { unit: 'day' } },
+                    y: { beginAtZero: true, max: 100 }
+                },
+                plugins: { legend: { display: false } }
             }
         });
     }
 
-    function enableCopyTracking() {
-        const restrictEvent = (e) => { 
-            if(isQuizActive) { e.preventDefault(); copyPasteAttempts++; isFlagged = true;}
-        };
-        document.addEventListener('contextmenu', restrictEvent);
-        document.addEventListener('copy', restrictEvent);
-        document.addEventListener('paste', restrictEvent);
-    }
+    // --- Table Rendering (Updated with Code Block formatting & AI Feedback) ---
+    function renderTable() {
+        const tbody = document.getElementById('submissions-body');
+        tbody.innerHTML = '';
 
-    function triggerStrike(title, description) {
-        if(!isQuizActive) return;
-        isFlagged = true;
-        if(title.includes("Camera")) webcamStrikes++;
-        
-        document.getElementById('warning-title').textContent = title;
-        document.getElementById('warning-desc').textContent = description;
-        document.getElementById('warning-modal').classList.add('show');
-    }
-    function closeWarningModal() { document.getElementById('warning-modal').classList.remove('show'); }
+        const sortedSubs = [...globalSubmissions].sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
 
-    // ==========================================
-    // QUIZ RENDER ENGINE
-    // ==========================================
-    function startTimer(minutes) {
-        let secondsRemaining = minutes * 60;
-        const display = document.getElementById('time-display');
-        document.getElementById('timer').style.display = 'flex';
-
-        timerInterval = setInterval(() => {
-            if(secondsRemaining <= 0) {
-                clearInterval(timerInterval);
-                processSubmission(); return;
-            }
-            secondsRemaining--;
-            const m = Math.floor(secondsRemaining / 60).toString().padStart(2, '0');
-            const s = (secondsRemaining % 60).toString().padStart(2, '0');
-            display.textContent = `${m}:${s}`;
-        }, 1000);
-    }
-
-    function buildPalette() {
-        const grid = document.getElementById('palette-grid');
-        grid.innerHTML = quizData.shuffledQuestions.map((q, i) => 
-            `<button class="palette-btn" id="pal-btn-${i}" onclick="showQuestion(${i})">${i + 1}</button>`
-        ).join('');
-    }
-
-    function buildQuestions() {
-        const area = document.getElementById('question-area');
-        area.innerHTML = quizData.shuffledQuestions.map((q, i) => {
-            let inputHtml = '';
-            if(q.type === 'single' || q.type === 'multiple') {
-                const inputType = q.type === 'single' ? 'radio' : 'checkbox';
-                inputHtml = `<div class="options-list">` + q.options.map(opt => `
-                    <label class="option-label">
-                        <input type="${inputType}" name="q-${i}" value="${opt.text}" onchange="markAnswered(${i})">
-                        <span>${opt.text}</span>
-                    </label>
-                `).join('') + `</div>`;
-            } else if (q.type === 'code') {
-                inputHtml = `<textarea name="q-${i}" class="form-control code-input" rows="8" placeholder="Write your code here..." oninput="markAnswered(${i})"></textarea>`;
-            } else {
-                const inputType = q.type === 'integer' ? 'number' : 'text';
-                inputHtml = `<textarea name="q-${i}" class="form-control" rows="3" placeholder="Type your answer..." oninput="markAnswered(${i})"></textarea>`;
+        sortedSubs.forEach((sub, index) => {
+            // Determine Advanced Anti-Cheat Status
+            let statusHtml = `<span class="status-badge status-clean"><i class="bi bi-check-circle"></i> Clean</span>`;
+            let isFlagged = false;
+            
+            if(sub.antiCheat) {
+                if(sub.antiCheat.wasAutoSubmitted || sub.antiCheat.identitySwapDetected) {
+                    statusHtml = `<span class="status-badge status-danger" title="Auto-Terminated"><i class="bi bi-slash-circle"></i> Terminated</span>`;
+                    isFlagged = true;
+                } else if(sub.antiCheat.tabSwitches > 0 || sub.antiCheat.webcamStrikes > 0 || sub.antiCheat.copyPasteAttempts > 0) {
+                    statusHtml = `<span class="status-badge status-warn" title="Violations Detected"><i class="bi bi-exclamation-triangle"></i> Warned</span>`;
+                    isFlagged = true;
+                }
             }
 
-            return `
-            <div class="question-card" id="q-card-${i}">
-                <div class="q-header">
-                    <div class="q-number">Question ${i + 1}</div>
-                    <div style="font-weight:600; color:var(--text-muted);">${q.marks} Marks</div>
-                </div>
-                <div class="q-text">${q.text}</div>
-                ${inputHtml}
-                <div class="nav-buttons">
-                    <button class="btn-nav" onclick="showQuestion(${i - 1})" ${i === 0 ? 'disabled' : ''}>Previous</button>
-                    <button class="btn-nav" onclick="showQuestion(${i + 1})" ${i === quizData.shuffledQuestions.length - 1 ? 'disabled' : ''}>Next</button>
-                </div>
-            </div>`;
-        }).join('');
+            const subDate = new Date(sub.submittedAt);
+            const dateStr = window.innerWidth <= 768 ? subDate.toLocaleDateString() : subDate.toLocaleString();
+
+            // Main Row
+            const tr = document.createElement('tr');
+            tr.className = "main-row";
+            tr.onclick = () => toggleDetails(`details-${index}`);
+            tr.innerHTML = `
+                <td>
+                    <strong style="display:block; margin-bottom:2px;">${sub.userDetails.name || 'N/A'}</strong>
+                    <small class="text-muted" style="word-break: break-all;">${sub.userDetails.email}</small>
+                </td>
+                <td>${dateStr}</td>
+                <td><strong>${sub.score.percentage.toFixed(1)}%</strong> <br><small class="text-muted">(${sub.score.obtainedMarks}/${sub.score.totalMarks})</small></td>
+                <td>${statusHtml}</td>
+                <td><button class="btn-action">Details <i class="bi bi-chevron-down"></i></button></td>
+            `;
+
+            // Expandable Details Row
+            const trDetails = document.createElement('tr');
+            trDetails.id = `details-${index}`;
+            trDetails.className = "details-row";
+            
+            let antiCheatAlert = "";
+            if(isFlagged && sub.antiCheat) {
+                antiCheatAlert = `
+                    <div class="anti-cheat-info">
+                        <p><i class="bi bi-shield-exclamation"></i> AI Proctoring Report:</p>
+                        <ul class="anti-cheat-list">
+                            ${sub.antiCheat.identitySwapDetected ? '<li class="ac-alert-text">Face Identity Swap Detected (Exam Terminated)</li>' : ''}
+                            ${sub.antiCheat.webcamStrikes > 0 ? `<li>Webcam/Focus Violations: <strong>${sub.antiCheat.webcamStrikes}</strong></li>` : ''}
+                            ${sub.antiCheat.tabSwitches > 0 ? `<li>Tab Switches Detected: <strong>${sub.antiCheat.tabSwitches}</strong></li>` : ''}
+                            ${sub.antiCheat.copyPasteAttempts > 0 ? `<li>Copy/Paste Attempts: <strong>${sub.antiCheat.copyPasteAttempts}</strong></li>` : ''}
+                            ${sub.antiCheat.wasAutoSubmitted ? '<li class="ac-alert-text">System Auto-Submitted Exam due to rules limit.</li>' : ''}
+                        </ul>
+                    </div>
+                `;
+            }
+
+            // Question Logic (Handles partial credit, AI Feedback, and formatting Code questions)
+            const questionsHtml = sub.questions.map(q => {
+                const maxMarks = q.marks;
+                const awardedMarks = q.marksObtained !== undefined ? q.marksObtained : (q.isCorrect ? maxMarks : 0);
+                
+                let statusClass = 'q-incorrect';
+                let statusText = 'Incorrect';
+                
+                if (awardedMarks === maxMarks) {
+                    statusClass = 'q-correct';
+                    statusText = 'Full Credit';
+                } else if (awardedMarks > 0) {
+                    statusClass = 'q-partial';
+                    statusText = 'Partial Credit';
+                }
+
+                // Format the user answer specifically for Code vs Text
+                let displayUserAnswer = Array.isArray(q.userAnswer) ? q.userAnswer.join(', ') : q.userAnswer;
+                if (q.questionType === 'code') {
+                    displayUserAnswer = `<pre class="code-preview"><code>${escapeHtml(displayUserAnswer)}</code></pre>`;
+                } else {
+                    displayUserAnswer = `<strong>${escapeHtml(displayUserAnswer)}</strong>`;
+                }
+
+                let aiFeedbackHtml = q.aiFeedback ? `
+                    <div class="ai-feedback-box">
+                        <i class="bi bi-robot"></i> <strong>AI Evaluation:</strong> ${escapeHtml(q.aiFeedback)}
+                    </div>
+                ` : '';
+
+                return `
+                <li>
+                    <div class="q-text">Q${q.questionNumber}: ${escapeHtml(q.questionText)}</div>
+                    <div class="q-ans">
+                        <div style="margin-bottom: 6px;">
+                            <span class="text-muted">Student Answer:</span> ${displayUserAnswer}
+                        </div>
+                        <div style="margin-bottom: 12px;">
+                            <span class="text-muted">Reference / Rubric:</span> <strong>${escapeHtml(Array.isArray(q.correctAnswer) ? q.correctAnswer.join(', ') : q.correctAnswer)}</strong>
+                        </div>
+                        
+                        <div>Status: <span class="${statusClass}">${statusText}</span> &nbsp;&nbsp;&bull;&nbsp;&nbsp; <strong>${awardedMarks} / ${maxMarks} marks</strong></div>
+                        ${aiFeedbackHtml}
+                    </div>
+                </li>`;
+            }).join('');
+
+            trDetails.innerHTML = `
+                <td colspan="5" style="padding: 0;">
+                    <div class="details-content">
+                        <h5>Submission Breakdown</h5>
+                        ${antiCheatAlert}
+                        <ul class="question-breakdown">
+                            ${questionsHtml}
+                        </ul>
+                    </div>
+                </td>
+            `;
+
+            tbody.appendChild(tr);
+            tbody.appendChild(trDetails);
+        });
     }
 
-    function showQuestion(index) {
-        if(index < 0 || index >= quizData.shuffledQuestions.length) return;
-        document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`q-card-${index}`).classList.add('active');
-        document.getElementById(`pal-btn-${index}`).classList.add('active');
-        currentQuestionIndex = index;
-
-        if (document.getElementById('mob-prev')) {
-            document.getElementById('mob-prev').disabled = (index === 0);
-            document.getElementById('mob-next').disabled = (index === quizData.shuffledQuestions.length - 1);
-            document.getElementById('mob-q-counter').textContent = `${index + 1}/${quizData.shuffledQuestions.length}`;
-        }
-        
-        if(window.innerWidth <= 768 && paletteMenu.classList.contains('open')) {
-            paletteMenu.classList.remove('open');
-            mobileOverlay.classList.remove('show');
-        }
-    }
-
-    function navQuestionMobile(dir) {
-        showQuestion(currentQuestionIndex + dir);
-    }
-
-    function markAnswered(index) {
-        const btn = document.getElementById(`pal-btn-${index}`);
-        const inputs = document.getElementsByName(`q-${index}`);
-        let hasValue = false;
-        if(inputs[0].type === 'radio' || inputs[0].type === 'checkbox') {
-            hasValue = Array.from(inputs).some(i => i.checked);
+    function toggleDetails(id) {
+        const row = document.getElementById(id);
+        if(row.classList.contains('show')) {
+            row.classList.remove('show');
         } else {
-            hasValue = inputs[0].value.trim() !== '';
+            document.querySelectorAll('.details-row').forEach(r => r.classList.remove('show'));
+            row.classList.add('show');
         }
-        if(hasValue) btn.classList.add('answered');
-        else btn.classList.remove('answered');
     }
 
-    // ==========================================
-    // SUBMISSION & AI GRADING WAIT
-    // ==========================================
-    document.getElementById('btn-final-submit').addEventListener('click', () => {
-        if(confirm("Submit Quiz? You cannot change answers after this.")) processSubmission();
+    // --- Exports ---
+    function downloadAnalyticsXLSX() {
+        if (globalSubmissions.length === 0) return alert('No data to export');
+
+        const exportData = globalSubmissions.map(s => ({
+            'Name': s.userDetails.name || 'N/A',
+            'Email': s.userDetails.email,
+            'Submitted At': new Date(s.submittedAt).toLocaleString(),
+            'Percentage': s.score.percentage.toFixed(2) + '%',
+            'Marks Obtained': s.score.obtainedMarks,
+            'Total Marks': s.score.totalMarks,
+            'Tab Switches': s.antiCheat?.tabSwitches || 0,
+            'Webcam Strikes': s.antiCheat?.webcamStrikes || 0,
+            'Copy/Paste Attempts': s.antiCheat?.copyPasteAttempts || 0,
+            'Identity Swap': s.antiCheat?.identitySwapDetected ? 'Yes' : 'No',
+            'Auto Terminated': s.antiCheat?.wasAutoSubmitted ? 'Yes' : 'No'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(exportData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Submissions");
+        XLSX.writeFile(wb, `Quiz_${quizId}_Submissions.xlsx`);
+    }
+
+    function downloadReportImage() {
+        const node = document.getElementById('capture-area');
+        domtoimage.toPng(node, { bgcolor: '#f9fafb' })
+            .then(function (dataUrl) {
+                saveAs(dataUrl, `Quiz_Report_${quizId}.png`);
+            })
+            .catch(function (error) {
+                console.error('Oops, something went wrong!', error);
+                alert("Failed to generate image report.");
+            });
+    }
+
+    // --- UI Listeners ---
+    document.getElementById("hamburger").addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("active");
+    });
+    document.getElementById("logout-button").addEventListener("click", () => {
+      localStorage.clear();
+      window.location.href = "/login";
     });
 
-    async function processSubmission() {
-        isQuizActive = false;
-        clearInterval(timerInterval);
-        clearInterval(faceDetectionInterval);
-        if(videoEl.srcObject) { videoEl.srcObject.getTracks().forEach(track => track.stop()); }
-        
-        try { if(document.fullscreenElement) document.exitFullscreen(); } catch(e){}
-        
-        document.getElementById('submitting-modal').classList.add('show');
-
-        const results = [];
-        let totalMaxMarks = 0;
-
-        quizData.shuffledQuestions.forEach((q, i) => {
-            const inputs = document.getElementsByName(`q-${i}`);
-            let userAns = null; 
-            totalMaxMarks += q.marks;
-
-            if (q.type === 'single') {
-                const checked = Array.from(inputs).find(inp => inp.checked);
-                userAns = checked ? checked.value : "Not Answered";
-            } else if (q.type === 'multiple') {
-                userAns = Array.from(inputs).filter(inp => inp.checked).map(inp => inp.value);
-                if(userAns.length === 0) userAns = "Not Answered";
-            } else {
-                userAns = inputs[0].value.trim() || "Not Answered";
-            }
-
-            results.push({
-                originalIndex: q.originalIndex,
-                questionNumber: q.originalIndex + 1,
-                questionText: q.text,
-                questionType: q.type,
-                userAnswer: userAns,
-                correctAnswer: (q.type === 'single' || q.type === 'multiple') ? q.options.filter(o=>o.isCorrect).map(o=>o.text) : q.correctAnswer,
-                marks: q.marks
-            });
-        });
-
-        const payload = {
-            quizId: quizId,
-            quizDescription: quizData.title,
-            userDetails: userDetails,
-            submittedAt: new Date().toISOString(),
-            score: { totalMarks: totalMaxMarks, obtainedMarks: 0, percentage: 0 },
-            questions: results,
-            tabSwitches: tabSwitchCount,
-            webcamStrikes: webcamStrikes,
-            copyPasteAttempts: copyPasteAttempts,
-            isFlagged: isFlagged || (tabSwitchCount > 0) || (webcamStrikes > 2)
-        };
-
-        try {
-            const res = await axios.post(`${API_BASE_URL}/submission`, payload);
-            document.getElementById('submitting-modal').classList.remove('show');
-            s3.style.display = 'none';
-            s4.style.display = 'block';
-            
-            const finalScore = res.data.score;
-            document.getElementById('res-percentage').textContent = finalScore.percentage + "%";
-            document.getElementById('res-fraction').textContent = `${finalScore.obtainedMarks} / ${finalScore.totalMarks} Marks`;
-            
-            if (results.some(q => q.questionType === 'text' || q.questionType === 'code')) {
-                document.getElementById('ai-grade-note').innerHTML = `<i class="bi bi-robot" style="color:var(--primary-purple);"></i> AI has successfully graded your text and coding answers.`;
-            }
-
-        } catch (error) {
-            alert("Failed to submit. Please do not close the tab, check connection and try again.");
-            document.getElementById('submitting-modal').classList.remove('show');
-        }
-    }
-
+    // Run Init
     init();
   </script>
 </body>

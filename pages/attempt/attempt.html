@@ -8,10 +8,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
   
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+  
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/edit/matchbrackets.min.js"></script>
 
   <style>
     /* --- CSS Variables --- */
@@ -36,7 +43,7 @@
         -webkit-user-select: none; -ms-user-select: none; user-select: none;
     }
 
-    input[type="text"], input[type="number"], textarea {
+    input[type="text"], input[type="number"], textarea, .CodeMirror {
         -webkit-user-select: text; -ms-user-select: text; user-select: text;
     }
 
@@ -51,12 +58,12 @@
     .section-header p { color: var(--text-muted); font-size: 1.1rem; }
 
     /* --- Forms & Buttons --- */
-    .form-group { margin-bottom: 20px; }
-    label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 0.95rem; }
-    input.form-control, textarea.form-control { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; }
-    textarea.code-input { font-family: monospace; background-color: #1e293b; color: #f8fafc; border-color: #334155; }
+    input.form-control, textarea.form-control { width: 100%; padding: 14px 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 1rem; background-color: #f9fafb; transition: all 0.2s; resize: vertical; }
     input.form-control:focus, textarea.form-control:focus { outline: none; border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.1); }
-
+    
+    /* CodeMirror Styling Override */
+    .CodeMirror { border-radius: 8px; font-family: 'Fira Code', monospace; font-size: 15px; height: auto; min-height: 200px; border: 1px solid #334155; }
+    
     .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 24px; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary { background-color: var(--primary-purple); color: white; }
     .btn-primary:hover:not(:disabled) { background-color: var(--primary-hover); transform: translateY(-2px); }
@@ -68,10 +75,6 @@
     .instructions-box li::before { content: "•"; position: absolute; left: 8px; color: #3b82f6; font-size: 1.5rem; top: -4px; }
     
     .anti-cheat-warning { background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 8px; margin-bottom: 24px; color: #991b1b; }
-    .anti-cheat-warning h4 { margin-bottom: 8px; display: flex; align-items: center; gap: 8px;}
-
-    .agreement { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 16px; background: #f9fafb; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer;}
-    .agreement input[type="checkbox"] { width: 22px; height: 22px; accent-color: var(--primary-purple); }
 
     /* --- Quiz Layout --- */
     .quiz-layout { display: flex; gap: 24px; align-items: flex-start; }
@@ -81,7 +84,6 @@
     .palette-btn { width: 100%; aspect-ratio: 1; border: 2px solid var(--border-color); border-radius: 8px; background: white; font-weight: 600; cursor: pointer; transition: all 0.2s;}
     .palette-btn.active { border-color: var(--primary-purple); box-shadow: 0 0 0 3px rgba(85, 66, 246, 0.2); }
     .palette-btn.answered { background: var(--success-green); color: white; border-color: var(--success-green); }
-    .palette-btn.marked { background: var(--warning-yellow); color: white; border-color: var(--warning-yellow); }
     
     .question-area { flex: 1; width: 100%; }
     .question-card { display: none; background: var(--surface-color); padding: 32px; border-radius: 12px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05);}
@@ -95,6 +97,11 @@
     .option-label { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border: 2px solid var(--border-color); border-radius: 12px; cursor: pointer; transition: all 0.2s; background: #f9fafb; font-size: 1.05rem;}
     .option-label:hover { border-color: #c4b5fd; background: #f5f3ff; }
     .option-label input { width: 22px; height: 22px; accent-color: var(--primary-purple); flex-shrink: 0;}
+
+    .nav-buttons { display: flex; justify-content: space-between; gap: 16px; margin-top: 24px;}
+    .btn-nav { flex: 1; padding: 12px; background: #f3f4f6; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s;}
+    .btn-nav:hover:not(:disabled) { background: #e5e7eb; }
+    .btn-nav:disabled { opacity: 0.5; cursor: not-allowed; }
 
     /* --- Widgets --- */
     .timer-widget { position: fixed; top: 20px; right: 20px; background: var(--surface-color); padding: 12px 24px; border-radius: 50px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.25rem; font-weight: 700; color: var(--text-main); border: 2px solid var(--border-color); z-index: 1000;}
@@ -113,12 +120,69 @@
     .ai-spinner { border: 4px solid #f3f3f3; border-top: 4px solid #a855f7; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+    /* Mobile UX Overhaul */
+    .mobile-bottom-nav { display: none; }
+    .palette-overlay-mobile { display: none; }
+
+    @media (max-width: 768px) {
+      body { padding: 0; align-items: flex-start; }
+      .card { padding: 24px 20px; margin-bottom: 0; border-radius: 0; min-height: 100dvh; box-shadow: none; border-bottom: 1px solid var(--border-color); }
+      .question-card { padding: 20px; border-radius: 0; border: none; box-shadow: none; min-height: 100dvh; padding-bottom: 100px; padding-top: 70px;}
+      .nav-buttons { display: none; }
+
+      .timer-widget { 
+          top: 0; right: 0; left: 0; border-radius: 0; border: none; border-bottom: 1px solid var(--border-color);
+          justify-content: center; font-size: 1.1rem; padding: 12px; box-shadow: none; z-index: 900; background: rgba(255,255,255,0.95); backdrop-filter: blur(5px);
+      }
+      
+      .webcam-container { 
+          top: 50px; bottom: auto; right: 16px; left: auto; 
+          width: 80px; height: 106px; border-width: 2px; border-radius: 8px; z-index: 950;
+      }
+
+      .mobile-bottom-nav {
+          display: flex; position: fixed; bottom: 0; left: 0; right: 0;
+          background: var(--surface-color); border-top: 1px solid var(--border-color);
+          padding: 12px 20px; justify-content: space-between; align-items: center;
+          z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.05); padding-bottom: calc(12px + env(safe-area-inset-bottom));
+      }
+      .mob-nav-btn {
+          background: #f3f4f6; border: none; border-radius: 50%; width: 44px; height: 44px;
+          display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-main); cursor: pointer; transition: background 0.2s;
+      }
+      
+      .mob-palette-btn {
+          background: var(--primary-purple); color: white; border: none; border-radius: 24px;
+          padding: 10px 24px; font-weight: 600; font-size: 1rem; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(85, 66, 246, 0.3); cursor: pointer;
+      }
+
+      .quiz-layout { display: block; }
+      .question-palette {
+          position: fixed; top: 0; left: -100%; width: 85%; max-width: 320px; height: 100dvh;
+          z-index: 3000; margin: 0; border-radius: 0; border-right: 1px solid var(--border-color);
+          box-shadow: 4px 0 15px rgba(0,0,0,0.1); transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          overflow-y: auto; padding: 24px 20px;
+      }
+      .question-palette.open { left: 0; }
+      
+      .palette-header-mobile {
+          display: flex !important; justify-content: space-between; align-items: center; 
+          margin-bottom: 24px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px;
+      }
+      .close-palette-btn { background: #f3f4f6; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 1.2rem; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;}
+
+      .palette-overlay-mobile {
+          display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+          background: rgba(0,0,0,0.5); z-index: 2500; backdrop-filter: blur(2px);
+      }
+      .palette-overlay-mobile.show { display: block; }
+    }
   </style>
 </head>
 <body>
 
   <div id="g_id_onload"
-       data-client_id="643259489574-rd4r68ma879oftas8cvi1p36iqtb2ag2.apps.googleusercontent.com"
+       data-client_id="YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com"
        data-context="signin"
        data-ux_mode="popup"
        data-callback="handleGoogleLogin"
@@ -156,8 +220,7 @@
       
       <div class="anti-cheat-warning" id="ac-warning-box" style="display: none;">
         <h4><i class="bi bi-shield-lock-fill"></i> Monitored Exam</h4>
-        <ul id="ac-rules-list" style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;">
-            </ul>
+        <ul id="ac-rules-list" style="margin-left: 24px; margin-top: 8px; font-size: 0.95rem;"></ul>
         <p style="color: var(--danger-red); font-weight: 700; margin-top: 8px;">Violations will severely flag your submission for the instructor.</p>
       </div>
 
@@ -177,6 +240,8 @@
 
     <div id="section-3" style="display: none;">
       
+      <div class="palette-overlay-mobile" id="mobile-palette-overlay"></div>
+
       <div id="timer" class="timer-widget" style="display: none;">
         <i class="bi bi-stopwatch"></i> <span id="time-display">--:--</span>
       </div>
@@ -187,15 +252,29 @@
       </div>
 
       <div class="quiz-layout">
-        <aside class="question-palette">
-          <h3>Question Palette</h3>
+        <aside class="question-palette" id="question-palette">
+          <div class="palette-header-mobile" style="display: none;">
+              <h3 style="margin:0;">Questions</h3>
+              <button class="close-palette-btn" id="close-palette-btn"><i class="bi bi-x-lg"></i></button>
+          </div>
+          <h3 class="desktop-palette-title">Question Palette</h3>
+          
           <div class="palette-grid" id="palette-grid"></div>
+          
           <button id="btn-final-submit" class="btn btn-success" style="margin-top: 32px; width: 100%;">
             <i class="bi bi-check2-all"></i> Submit Quiz
           </button>
         </aside>
 
         <main class="question-area" id="question-area"></main>
+
+        <div class="mobile-bottom-nav" id="mobile-nav">
+            <button class="mob-nav-btn" id="mob-prev" onclick="navQuestionMobile(-1)"><i class="bi bi-chevron-left"></i></button>
+            <button class="mob-palette-btn" id="mobile-palette-toggle">
+                <i class="bi bi-grid-3x3-gap-fill"></i> <span id="mob-q-counter">1/10</span>
+            </button>
+            <button class="mob-nav-btn" id="mob-next" onclick="navQuestionMobile(1)"><i class="bi bi-chevron-right"></i></button>
+        </div>
       </div>
     </div>
 
@@ -223,7 +302,7 @@
     <div class="modal-content ai-loader-container">
       <div class="ai-spinner"></div>
       <h3 id="submit-loader-text">Evaluating Answers...</h3>
-      <p style="color: var(--text-muted);">AI is currently grading your text and coding submissions. Please do not close the window.</p>
+      <p style="color: var(--text-muted);">AI is currently grading your subjective and coding submissions. Please do not close the window.</p>
     </div>
   </div>
 
@@ -232,9 +311,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     const quizId = urlParams.get("id");
 
-    // ==========================================
-    // FRONTEND AI CONFIGURATION (Testing Only)
-    // ==========================================
     const GEMINI_API_KEYS = [
       "AIzaSyBa_FMGv6yH-_8iDBXnBPtZXujx9cG-tyk",
       "AIzaSyANPiVPGbmz6SJC4I3CRta9TJOB9b8c_hE",
@@ -256,6 +332,9 @@
     let userDetails = {};
     let currentQuestionIndex = 0;
     
+    // CodeMirror instances store
+    const codeEditors = {};
+    
     // Anti-Cheat State
     let isFlagged = false;
     let tabSwitchCount = 0;
@@ -266,7 +345,7 @@
     let hasTabCheck = false;
     let hasCopyCheck = false;
 
-    // Tracking State
+    // AI Tracking State
     let videoEl = document.getElementById('webcam-video');
     let faceDetectionInterval = null;
     let modelsLoaded = false;
@@ -278,6 +357,21 @@
     const s2 = document.getElementById('section-2');
     const s3 = document.getElementById('section-3');
     const s4 = document.getElementById('section-4');
+
+    // Mobile Palette Toggle
+    const mobileToggle = document.getElementById('mobile-palette-toggle');
+    const mobileOverlay = document.getElementById('mobile-palette-overlay');
+    const paletteMenu = document.getElementById('question-palette');
+    const closePaletteBtn = document.getElementById('close-palette-btn');
+
+    if (mobileToggle) mobileToggle.addEventListener('click', () => { paletteMenu.classList.add('open'); mobileOverlay.classList.add('show'); });
+    if (closePaletteBtn) closePaletteBtn.addEventListener('click', () => { paletteMenu.classList.remove('open'); mobileOverlay.classList.remove('show'); });
+    if (mobileOverlay) mobileOverlay.addEventListener('click', () => { paletteMenu.classList.remove('open'); mobileOverlay.classList.remove('show'); });
+
+    if (window.innerWidth <= 768) {
+        document.querySelector('.desktop-palette-title').style.display = 'none';
+        document.querySelector('.palette-header-mobile').style.display = 'flex';
+    }
 
     async function init() {
         if (!quizId) return showError("Invalid Link", "No Quiz ID was provided in the URL.");
@@ -292,7 +386,6 @@
             document.getElementById('intro-desc').textContent = quizData.description;
             document.getElementById('auth-container').style.display = 'block';
 
-            // Preload models if camera is required
             if (quizData.antiCheatSettings && quizData.antiCheatSettings.aiCamera) {
                 loadFaceAPIModels();
             }
@@ -343,13 +436,22 @@
         hasTabCheck = !!settings.tabSwitch;
         hasCopyCheck = !!settings.copyPaste;
 
+        const container = document.getElementById('instructions-container');
+        let infoHtml = `<ul>
+            <li><strong>Total Marks:</strong> ${quizData.questions.reduce((sum, q) => sum + q.marks, 0)}</li>
+            <li><strong>Passing Score:</strong> ${quizData.passingScore}%</li>
+        `;
+        if(quizData.timeLimit) infoHtml += `<li><strong>Time Limit:</strong> ${quizData.timeLimit} Minutes</li>`;
+        infoHtml += `</ul>`;
+        container.innerHTML = infoHtml;
+
         const acBox = document.getElementById('ac-warning-box');
         const acList = document.getElementById('ac-rules-list');
         let rulesHtml = '';
 
         if(hasAiCamera) rulesHtml += `<li><strong>AI Face Tracking:</strong> Your camera must remain on. Looking away flags the attempt.</li>`;
         if(hasTabCheck) rulesHtml += `<li><strong>Tab Lock:</strong> Leaving the quiz tab will be recorded.</li>`;
-        if(hasCopyCheck) rulesHtml += `<li><strong>No Copy/Paste:</strong> Clipboard actions and right-clicking are disabled.</li>`;
+        if(hasCopyCheck) rulesHtml += `<li><strong>No Copy/Paste:</strong> Clipboard actions and right-clicking are disabled (including inside the Code Editor).</li>`;
 
         if (rulesHtml) {
             acBox.style.display = 'block';
@@ -474,7 +576,7 @@
     function closeWarningModal() { document.getElementById('warning-modal').classList.remove('show'); }
 
     // ==========================================
-    // QUIZ RENDER ENGINE
+    // QUIZ RENDER ENGINE (Integrated CodeMirror)
     // ==========================================
     function startTimer(minutes) {
         let secondsRemaining = minutes * 60;
@@ -504,6 +606,7 @@
         const area = document.getElementById('question-area');
         area.innerHTML = quizData.shuffledQuestions.map((q, i) => {
             let inputHtml = '';
+            
             if(q.type === 'single' || q.type === 'multiple') {
                 const inputType = q.type === 'single' ? 'radio' : 'checkbox';
                 inputHtml = `<div class="options-list">` + q.options.map(opt => `
@@ -513,10 +616,14 @@
                     </label>
                 `).join('') + `</div>`;
             } else if (q.type === 'code') {
-                inputHtml = `<textarea name="q-${i}" class="form-control code-input" rows="8" placeholder="Write your code here..." oninput="markAnswered(${i})"></textarea>`;
+                // We generate a textarea here, and we will morph it into CodeMirror right after
+                inputHtml = `<textarea id="code-editor-${i}" name="q-${i}" placeholder="// Write your code here..."></textarea>`;
+            } else if (q.type === 'text') {
+                // Larger Text Area for Subjective text
+                inputHtml = `<textarea name="q-${i}" class="form-control" rows="6" placeholder="Type your detailed answer here..." oninput="markAnswered(${i})"></textarea>`;
             } else {
-                const inputType = q.type === 'integer' ? 'number' : 'text';
-                inputHtml = `<textarea name="q-${i}" class="form-control" rows="3" placeholder="Type your answer..." oninput="markAnswered(${i})"></textarea>`;
+                // Integer
+                inputHtml = `<input type="number" name="q-${i}" class="form-control" placeholder="Enter numeric value..." oninput="markAnswered(${i})">`;
             }
 
             return `
@@ -527,33 +634,94 @@
                 </div>
                 <div class="q-text">${q.text}</div>
                 ${inputHtml}
+                <div class="nav-buttons">
+                    <button class="btn-nav" onclick="showQuestion(${i - 1})" ${i === 0 ? 'disabled' : ''}>Previous</button>
+                    <button class="btn-nav" onclick="showQuestion(${i + 1})" ${i === quizData.shuffledQuestions.length - 1 ? 'disabled' : ''}>Next</button>
+                </div>
             </div>`;
         }).join('');
+
+        // Initialize CodeMirror instances for code questions
+        quizData.shuffledQuestions.forEach((q, i) => {
+            if (q.type === 'code') {
+                const textarea = document.getElementById(`code-editor-${i}`);
+                const editor = CodeMirror.fromTextArea(textarea, {
+                    lineNumbers: true,
+                    mode: "javascript", // You could make this dynamic based on teacher input if needed
+                    theme: "dracula",
+                    matchBrackets: true,
+                    indentUnit: 4
+                });
+
+                // Enforce Anti-Cheat Paste Prevention inside CodeMirror
+                if(hasCopyCheck) {
+                    editor.on('paste', (cm, e) => {
+                        e.preventDefault();
+                        copyPasteAttempts++; 
+                        isFlagged = true;
+                        triggerStrike("Illegal Paste Detected", "Pasting external code is strictly prohibited.");
+                    });
+                }
+
+                editor.on('change', () => {
+                    editor.save(); // Syncs back to the hidden textarea so we can extract value easily later
+                    markAnswered(i);
+                });
+                
+                codeEditors[i] = editor;
+            }
+        });
     }
 
     function showQuestion(index) {
+        if(index < 0 || index >= quizData.shuffledQuestions.length) return;
         document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.palette-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`q-card-${index}`).classList.add('active');
+        
+        const qCard = document.getElementById(`q-card-${index}`);
+        qCard.classList.add('active');
         document.getElementById(`pal-btn-${index}`).classList.add('active');
         currentQuestionIndex = index;
+
+        // Force CodeMirror refresh if it was hidden initially (solves rendering bugs)
+        if(codeEditors[index]) {
+            setTimeout(() => codeEditors[index].refresh(), 10);
+        }
+
+        if (document.getElementById('mob-prev')) {
+            document.getElementById('mob-prev').disabled = (index === 0);
+            document.getElementById('mob-next').disabled = (index === quizData.shuffledQuestions.length - 1);
+            document.getElementById('mob-q-counter').textContent = `${index + 1}/${quizData.shuffledQuestions.length}`;
+        }
+        
+        if(window.innerWidth <= 768 && paletteMenu.classList.contains('open')) {
+            paletteMenu.classList.remove('open');
+            mobileOverlay.classList.remove('show');
+        }
     }
 
     function markAnswered(index) {
         const btn = document.getElementById(`pal-btn-${index}`);
-        const inputs = document.getElementsByName(`q-${index}`);
+        const qType = quizData.shuffledQuestions[index].type;
         let hasValue = false;
-        if(inputs[0].type === 'radio' || inputs[0].type === 'checkbox') {
-            hasValue = Array.from(inputs).some(i => i.checked);
+        
+        if(qType === 'code') {
+            hasValue = codeEditors[index].getValue().trim() !== '';
         } else {
-            hasValue = inputs[0].value.trim() !== '';
+            const inputs = document.getElementsByName(`q-${index}`);
+            if(inputs[0].type === 'radio' || inputs[0].type === 'checkbox') {
+                hasValue = Array.from(inputs).some(i => i.checked);
+            } else {
+                hasValue = inputs[0].value.trim() !== '';
+            }
         }
+
         if(hasValue) btn.classList.add('answered');
         else btn.classList.remove('answered');
     }
 
     // ==========================================
-    // SUBMISSION & FRONTEND AI GRADING
+    // SUBMISSION & AI GRADING LOGIC
     // ==========================================
     document.getElementById('btn-final-submit').addEventListener('click', () => {
         if(confirm("Submit Quiz? You cannot change answers after this.")) processSubmission();
@@ -585,6 +753,8 @@
             } else if (q.type === 'multiple') {
                 userAns = Array.from(inputs).filter(inp => inp.checked).map(inp => inp.value);
                 if(userAns.length === 0) userAns = "Not Answered";
+            } else if (q.type === 'code') {
+                userAns = codeEditors[i].getValue().trim() || "Not Answered";
             } else {
                 userAns = inputs[0].value.trim() || "Not Answered";
             }
@@ -618,12 +788,12 @@
             });
         });
 
-        // 2. Grade text/code answers using Frontend Gemini fetch
+        // 2. Grade text (subjective) and code answers using Frontend AI
         const manualGradeQuestions = results.filter(q => q.questionType === 'text' || q.questionType === 'code');
         let aiObtainedMarks = 0;
 
         if (manualGradeQuestions.length > 0) {
-            document.getElementById('submit-loader-text').textContent = "AI is Grading Answers...";
+            document.getElementById('submit-loader-text').textContent = "AI is Grading Subjective & Code Answers...";
             try {
                 const apiKey = getNextGeminiKey();
                 const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
@@ -631,10 +801,15 @@
                 const gradingPrompt = `
                     You are a strict but fair automated grader. Evaluate each student answer based on the provided correct answer/rubric.
                     Assign marks between 0 and the max marks for that question. Partial credit is allowed.
+
+                    EVALUATION RULES:
+                    - For 'text' (subjective) questions: Evaluate if the student's answer captures the semantic meaning and core concepts outlined in the rubric.
+                    - For 'code' questions: Evaluate if the code has correct syntax, logic, and solves the problem as described in the rubric. Look for efficiency and correctness.
                     
                     Student Answers to Grade:
                     ${JSON.stringify(manualGradeQuestions.map(q => ({
                         questionId: q.originalIndex,
+                        questionType: q.questionType,
                         question: q.questionText,
                         studentAnswer: q.userAnswer,
                         correctAnswerRubric: q.correctAnswer,
@@ -643,7 +818,8 @@
 
                     Respond strictly in JSON array format representing objects:
                     [
-                        { "questionId": 0, "awardedMarks": 2, "isCorrect": true, "feedback": "Good explanation." }
+                        { "questionId": 0, "awardedMarks": 2, "isCorrect": true, "feedback": "Good explanation." },
+                        { "questionId": 1, "awardedMarks": 5, "isCorrect": true, "feedback": "Code is efficient and correct." }
                     ]
                 `;
 
@@ -713,7 +889,7 @@
             document.getElementById('res-fraction').textContent = `${finalScore.obtainedMarks} / ${finalScore.totalMarks} Marks`;
             
             if (manualGradeQuestions.length > 0) {
-                document.getElementById('ai-grade-note').innerHTML = `<i class="bi bi-robot" style="color:var(--primary-purple);"></i> AI has successfully graded your text and coding answers.`;
+                document.getElementById('ai-grade-note').innerHTML = `<i class="bi bi-robot" style="color:var(--primary-purple);"></i> AI has successfully graded your subjective and coding answers.`;
             }
 
         } catch (error) {

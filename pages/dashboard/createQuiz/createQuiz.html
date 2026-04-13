@@ -270,7 +270,7 @@
         <h3><i class="bi bi-magic" style="color: #a855f7;"></i> Generate with AI</h3>
         <button class="btn-close" onclick="closeAIModal()"><i class="bi bi-x-lg"></i></button>
       </div>
-      <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">Let AI generate the perfect quiz. Review and edit the questions before publishing.</p>
+      <p style="color: var(--text-muted); margin-bottom: 24px; font-size: 0.95rem;">Let AI generate the perfect quiz including coding and subjective questions.</p>
       
       <form id="ai-form">
         <div class="form-group">
@@ -307,6 +307,23 @@
     const API_BASE_URL = "https://quizify-backend-theta.vercel.app";
     const token = localStorage.getItem("token");
     if (!token) window.location.href = "/login";
+
+    // ==========================================
+    // UNSAVED CHANGES WARNING
+    // ==========================================
+    let isFormDirty = false;
+    
+    // Mark form as dirty when user inputs data
+    document.getElementById('quiz-form').addEventListener('input', () => {
+        isFormDirty = true;
+    });
+
+    window.addEventListener('beforeunload', function (e) {
+        if (isFormDirty) {
+            e.preventDefault();
+            e.returnValue = ''; // Standard way to trigger the browser's leave warning
+        }
+    });
 
     // ==========================================
     // FRONTEND AI CONFIGURATION (Testing Only)
@@ -373,6 +390,7 @@
         const description = document.getElementById('ai-desc').value;
         const difficulty = document.getElementById('ai-difficulty').value;
 
+        // Enhanced prompt to explicitly ask for coding and subjective questions
         const promptText = `
             You are an expert educator. Generate a quiz based on the following:
             Topic: ${topic}
@@ -380,7 +398,12 @@
             Field of Study: ${field || "General"}
             Difficulty: ${difficulty}
 
-            Generate exactly 25 questions. Include a mix of 'single' (multiple choice with one correct answer), 'multiple' (multiple choice with multiple correct answers), 'integer', and 'text' (short answer) questions.
+            Generate exactly 15 questions. IMPORTANT: Include a diverse mix of:
+            1. 'single' (multiple choice with one correct answer)
+            2. 'multiple' (multiple choice with multiple correct answers)
+            3. 'integer' (numeric answer)
+            4. 'text' (subjective questions, e.g., "What is JavaScript?", "Explain closure")
+            5. 'code' (coding problems where students must write a program)
 
             Also, recommend a timeLimit (in minutes) and antiCheat settings based on the difficulty.
             
@@ -406,7 +429,13 @@
                     "type": "text",
                     "text": "Explain the concept of...",
                     "marks": 5,
-                    "correctAnswer": "A brief explanation indicating..."
+                    "correctAnswer": "A comprehensive rubric or key points the AI grader should look for to assign marks."
+                },
+                {
+                    "type": "code",
+                    "text": "Write a JavaScript function that reverses a string.",
+                    "marks": 10,
+                    "correctAnswer": "The code must correctly reverse the input string. Example expected logic: return str.split('').reverse().join('');"
                 }
                 ]
             }
@@ -423,7 +452,7 @@
                     contents: [{ role: 'user', parts: [{ text: promptText }] }],
                     generationConfig: {
                         responseMimeType: "application/json",
-                        maxOutputTokens: 8192, // Increased significantly to avoid MAX_TOKENS cutoff
+                        maxOutputTokens: 8192, 
                         temperature: 0.4
                     }
                 })
@@ -436,7 +465,6 @@
 
             const resData = await response.json();
             
-            // Check if response was cut off just in case
             if(resData.candidates[0].finishReason === 'MAX_TOKENS') {
                 throw new Error("The AI response was cut off because it was too long. Please try a simpler topic.");
             }
@@ -444,11 +472,10 @@
             const aiResponseText = resData.candidates[0].content.parts[0].text;
             const data = JSON.parse(aiResponseText);
 
-            // Clear existing questions
             document.getElementById('questions-container').innerHTML = '';
             questionCount = 0;
+            isFormDirty = true; // Mark form dirty after generation
 
-            // Apply AI Recommendations
             if(data.recommendedTimeLimit) {
                 document.getElementById('enable-time-limit').checked = true;
                 document.getElementById('time-limit').style.display = 'block';
@@ -460,7 +487,6 @@
                 document.getElementById('ac-copy').checked = !!data.recommendedAntiCheat.copyPaste;
             }
 
-            // Populate Questions
             data.questions.forEach(qData => {
                 addQuestion(qData);
             });
@@ -468,7 +494,6 @@
             closeAIModal();
             showToast("Quiz generated successfully! Please review the questions.");
             
-            // Auto-fill Title if empty
             if(!document.getElementById('quiz-title').value) {
                 document.getElementById('quiz-title').value = `${topic} Assessment`;
             }
@@ -484,11 +509,12 @@
     });
 
     // ==========================================
-    // QUESTION BUILDER LOGIC (Modified for AI Prefill)
+    // QUESTION BUILDER LOGIC
     // ==========================================
     function addQuestion(prefillData = null) {
         questionCount++;
         const qId = questionCount;
+        isFormDirty = true;
         
         const qType = prefillData ? prefillData.type : 'single';
         const qText = prefillData ? prefillData.text : '';
@@ -506,9 +532,9 @@
                         <select id="question-type-${qId}" onchange="updateQuestionType(${qId})" required>
                             <option value="single" ${qType === 'single' ? 'selected' : ''}>Single Choice (Radio)</option>
                             <option value="multiple" ${qType === 'multiple' ? 'selected' : ''}>Multiple Choice (Checkbox)</option>
-                            <option value="text" ${qType === 'text' ? 'selected' : ''}>Short Text</option>
+                            <option value="text" ${qType === 'text' ? 'selected' : ''}>Short/Long Text (Subjective)</option>
                             <option value="integer" ${qType === 'integer' ? 'selected' : ''}>Numeric</option>
-                            <option value="code" ${qType === 'code' ? 'selected' : ''}>Code Snippet</option>
+                            <option value="code" ${qType === 'code' ? 'selected' : ''}>Coding Problem</option>
                         </select>
                         <button type="button" class="btn-icon" onclick="deleteQuestion(${qId})" title="Delete Question"><i class="bi bi-trash-fill"></i></button>
                     </div>
@@ -531,7 +557,6 @@
         
         document.getElementById('questions-container').insertAdjacentHTML('beforeend', questionHtml);
         
-        // Handle Options Prefill
         const optionsContainer = document.getElementById(`options-${qId}`);
         const addBtn = document.getElementById(`btn-add-opt-${qId}`);
         
@@ -544,7 +569,7 @@
             }
         } else {
             addBtn.style.display = 'none';
-            const placeholder = qType === 'code' ? 'Enter expected output or rubrics for AI grading' : 'Enter the exact correct answer or grading rubric';
+            const placeholder = qType === 'code' ? 'Enter expected logic/output rubric for AI grading' : 'Enter the exact correct answer or subjective grading rubric';
             const val = prefillData ? prefillData.correctAnswer : '';
             optionsContainer.innerHTML = `
                 <div class="option-row" style="background: var(--surface-color);">
@@ -560,13 +585,14 @@
         const optionsContainer = document.getElementById(`options-${qId}`);
         const addBtn = document.getElementById(`btn-add-opt-${qId}`);
         optionsContainer.innerHTML = '';
+        isFormDirty = true;
 
         if (type === 'single' || type === 'multiple') {
             addBtn.style.display = 'block';
             addOption(qId); addOption(qId);
         } else {
             addBtn.style.display = 'none';
-            const placeholder = type === 'code' ? 'Enter expected output or rubrics for AI grading' : 'Enter the exact correct answer or grading rubric';
+            const placeholder = type === 'code' ? 'Enter expected logic/output rubric for AI grading' : 'Enter the exact correct answer or subjective grading rubric';
             optionsContainer.innerHTML = `
                 <div class="option-row" style="background: var(--surface-color);">
                     <i class="bi bi-check2-square" style="color: var(--success-green);"></i>
@@ -581,12 +607,13 @@
         const type = document.getElementById(`question-type-${qId}`).value;
         const inputType = type === 'single' ? 'radio' : 'checkbox';
         const optCount = container.children.length + 1;
+        isFormDirty = true;
 
         const html = `
             <div class="option-row">
                 <input type="${inputType}" name="correct-${qId}" value="${optCount-1}" ${isCorrect ? 'checked' : ''} title="Mark as correct answer">
                 <input type="text" name="option-text-${qId}[]" placeholder="Option ${optCount}" value="${optText}" required>
-                <button type="button" class="btn-icon" onclick="this.parentElement.remove()" style="padding: 4px; border:none;"><i class="bi bi-x-lg"></i></button>
+                <button type="button" class="btn-icon" onclick="this.parentElement.remove(); isFormDirty = true;" style="padding: 4px; border:none;"><i class="bi bi-x-lg"></i></button>
             </div>
         `;
         container.insertAdjacentHTML('beforeend', html);
@@ -594,7 +621,7 @@
 
     function deleteQuestion(qId) {
         document.getElementById(`question-${qId}-container`).remove();
-        // Re-numbering
+        isFormDirty = true;
         const questions = document.querySelectorAll('.question-card');
         questions.forEach((card, index) => { card.querySelector('.q-num').textContent = index + 1; });
     }
@@ -661,6 +688,10 @@
 
             if (!res.ok) throw new Error('Failed to create quiz');
             showToast('Quiz Published Successfully!');
+            
+            // Turn off dirty flag since we saved successfully
+            isFormDirty = false;
+            
             setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
 
         } catch (error) {
